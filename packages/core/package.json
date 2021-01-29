@@ -1,0 +1,47 @@
+{
+  "name": "@flatom/core",
+  "version": "0.1.0",
+  "description": "Core package",
+  "keywords": [
+    "State",
+    "manager"
+  ],
+  "author": "Evgeny <arswarog@yandex.ru>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "dist/core.js",
+  "directories": {
+    "lib": "src",
+    "test": "tests"
+  },
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "registry": "http://localhost:4873"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run rebuild && npm run test",
+    "postpublish": "npm run clean",
+    "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --external=react,@flatom/core",
+    "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf build/",
+    "rebuild": "npm run clean && npm run build",
+    "test": "cross-env fixme=fixme ../../node_modules/.bin/jest",
+    "test:watch": "cross-env fixme=fixme ../../node_modules/.bin/jest --watch",
+    "test:debug": "node --inspect-brk ../../node_modules/.bin/jest --runInBand",
+    "bench": "npm run rebuild && npm run bench:now && npm run clean",
+    "bench:now": "cross-env fixme=fixme ../../node_modules/.bin/ts-node -P benchmark/tsconfig.json benchmark",
+    "show-perf": "node ./tools/showPerfResults",
+    "ts-check": "cross-env fixme=fixme ../../node_modules/.bin/tsc --noEmit",
+    "ts-check:watch": "npm run ts-check -- --watch",
+    "update": "npx npm-check-updates -u",
+    "presize": "npm run rebuild",
+    "size": "size-limit"
+  },
+  "size-limit": [
+    {
+      "limit": "5 KB",
+      "path": "dist/*.js"
+    }
+  ]
+}

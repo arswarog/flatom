@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "module": "ESNext",
+    "target": "esnext",
+    "sourceMap": true,
+    "declaration": true,
+    "strict": true,
+    "jsx": "react",
+    "outDir": "lib",
+    "lib": [
+      "es2015"
+    ],
+  },
+  "include": [
+    "packages/core/src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
+}
