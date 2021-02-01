@@ -9,14 +9,18 @@ import { PayloadReducer } from './common';
 
 const atomSymbol = Symbol('Atom');
 
-export type AtomName = string | Symbol;
+export type AtomName = string; // fixme: string | symbol;
 
 export interface Atom<TState> {
-    readonly [atomSymbol]: Symbol;
+    readonly [atomSymbol]: symbol;
 
     readonly atomName: AtomName;
 
+    readonly relatedAtoms: ReadonlyArray<Atom<any>>;
+
     (state: TState | undefined, action: AnyAction): TState;
+
+    <T>(state: TState | undefined, action: { type: Atom<T>, payload: T }): TState;
 }
 
 interface ReducerCreator<TState> {
@@ -33,6 +37,7 @@ export function declareAtom<TState extends object>(
     reducerCreator: (on: ReducerCreator<TState>) => void,
 ): Atom<TState> {
     const reducers: Map<string | Atom<any>, PayloadReducer<TState, any>> = new Map();
+    const relatedAtoms: Atom<any>[] = [];
 
     let other: PayloadReducer<TState, any> | undefined;
 
@@ -40,6 +45,7 @@ export function declareAtom<TState extends object>(
         if (isAtom(target)) {
             if (reducers.has(target))
                 throw new Error(`Reaction for atom "${target.atomName}" already set`);
+            relatedAtoms.push(target);
             reducers.set(target, reducer);
         } else if (isActionCreator(target)) {
             if (reducers.has(target.type))
@@ -57,27 +63,27 @@ export function declareAtom<TState extends object>(
 
     reducerCreator(on);
 
-    const atom: any = (state: TState, action: AnyAction | { atom: Atom<any>, state: any }) => {
-        if (!state)
-            state = initialState;
+    const atom: any = (state: TState, {type, payload}: AnyAction | { type: Atom<any>, payload: any }) => {
+        if (!type)
+            return state || initialState;
 
-        if ('type' in action) {
-            const reducer = reducers.get(action.type);
+        if (isAtom(type)) {
+            const reducer = reducers.get(type);
             return reducer
-                ? reducer(state, action.payload)
-                : other
-                    ? other(state, action)
-                    : state;
-        } else if ('atom' in action) {
-            const reducer = reducers.get(action.atom);
-            return reducer
-                ? reducer(state, action.state)
+                ? reducer(state || initialState, payload)
                 : state;
-        } else
-            throw new Error('Invalid action');
+        } else {
+            const reducer = reducers.get(type);
+            return reducer
+                ? reducer(state || initialState, payload)
+                : other
+                    ? other(state || initialState, {type, payload})
+                    : state || initialState;
+        }
     };
     atom.atomName = atomName;
     atom[atomSymbol] = atomSymbol;
+    atom.relatedAtoms = relatedAtoms;
     return atom;
 }
 

@@ -9,12 +9,16 @@ export type ActionType = string;
 
 export type PayloadOf<T> = T extends ActionCreator<infer R> ? R : never;
 
-export interface ActionCreator<TPayload> {
+export interface AnyActionCreator<TPayload> {
     readonly [actionCreatorSymbol]: Symbol;
 
     readonly type: ActionType;
 
     (payload?: TPayload): { type: string, payload: TPayload };
+}
+
+export interface ActionCreator<TPayload> extends AnyActionCreator<TPayload> {
+    (payload: TPayload): { type: string, payload: TPayload };
 }
 
 export interface PayloadActionCreator<TPayload> {

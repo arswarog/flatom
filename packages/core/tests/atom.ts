@@ -16,7 +16,7 @@ describe('Atom', () => {
     });
     describe('reducer functionality', () => {
         test('atom', () => {
-            const state = ParentAtom(undefined, {atom: ChildAtom, state: {num: 10}} as any);
+            const state = ParentAtom(undefined, {type: ChildAtom, payload: {num: 10}} as any);
 
             expect(state).toEqual({
                 childNum: 10,
@@ -68,7 +68,11 @@ describe('Atom', () => {
         });
         test('invalid action', () => {
             // assert
-            expect(() => ChildAtom(undefined, {} as any)).toThrow();
+            const state = ChildAtom(undefined, {} as any);
+
+            expect(state).toEqual({
+                num: 0,
+            });
         });
     });
 });
