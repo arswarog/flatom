@@ -1,6 +1,6 @@
-import { ChildAtom, IChildState, setNum } from './data/child.atom';
+import { ChildAtom, IChildState, setChildNum } from './data/child.atom';
 import { declareAction, declareAtom } from '../src';
-import { ParentAtom, setStr } from './data/parent.atom';
+import { ParentAtom, setParentStr } from './data/parent.atom';
 
 describe('Atom', () => {
     describe('properties', () => {
@@ -19,12 +19,12 @@ describe('Atom', () => {
             const state = ParentAtom(undefined, {atom: ChildAtom, state: {num: 10}} as any);
 
             expect(state).toEqual({
-                num: 10,
+                childNum: 10,
                 str: 'test',
             });
         });
         test('action', () => {
-            const state = ChildAtom(undefined, setNum({value: 10}));
+            const state = ChildAtom(undefined, setChildNum({value: 10}));
 
             expect(state).toEqual({
                 num: 10,
@@ -32,10 +32,10 @@ describe('Atom', () => {
         });
         test('unknown action and state by default', () => {
             // act
-            const state = ParentAtom(undefined, setNum({value: 10}));
+            const state = ParentAtom(undefined, setChildNum({value: 10}));
 
             expect(state).toEqual({
-                num: 0,
+                childNum: 0,
                 str: 'test',
             });
         });
@@ -45,7 +45,7 @@ describe('Atom', () => {
 
             test('known action', () => {
                 // act
-                const state = ChildAtom(undefined, setNum({value: 10}));
+                const state = ChildAtom(undefined, setChildNum({value: 10}));
 
                 // assert
                 expect(state).toEqual({

@@ -7,22 +7,22 @@ export interface IChildState {
     payload?: any;
 }
 
-export const setNum = declareAction<{ value: number }>('set num');
-export const incrementNum = declareAction('increment num');
+export const setChildNum = declareAction<{ value: number }>('set child num');
+export const incrementChildNum = declareAction('increment child num');
 
 export const ChildAtom = declareAtom<IChildState>(
-    'test',
+    'child',
     {
         num: 0,
     },
     on => [
-        on(setNum, (state, {value}) => {
+        on(setChildNum, (state, {value}) => {
             return {
                 ...state,
                 num: value,
             };
         }),
-        on(incrementNum, (state) => {
+        on(incrementChildNum, (state) => {
             return {
                 ...state,
                 num: state.num + 1,

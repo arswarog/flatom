@@ -2,11 +2,11 @@ import { declareAtom, declareAction } from '../../src';
 import { ChildAtom } from './child.atom';
 
 export interface IParentState {
-    num: number;
+    childNum: number;
     str: string;
 }
 
-export const setStr = declareAction('set string', ({value}: { value: string }) => {
+export const setParentStr = declareAction('set string', ({value}: { value: string }) => {
     return {
         validationResult: value.length > 5,
         value: value + ' + 1',
@@ -14,19 +14,19 @@ export const setStr = declareAction('set string', ({value}: { value: string }) =
 });
 
 export const ParentAtom = declareAtom<IParentState>(
-    'test',
+    'parent',
     {
-        num: 0,
+        childNum: 0,
         str: 'test',
     },
     on => [
         on(ChildAtom, (state, childState) => {
             return {
                 ...state,
-                num: childState.num,
+                childNum: childState.num,
             };
         }),
-        on(setStr, (state, params) => {
+        on(setParentStr, (state, params) => {
             return {
                 ...state,
                 str: params.value,
