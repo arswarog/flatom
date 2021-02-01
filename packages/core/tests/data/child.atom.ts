@@ -1,5 +1,4 @@
 import { declareAtom, declareAction } from '../../src';
-import { ParentAtom } from './parent.atom';
 
 export interface IChildState {
     num: number;

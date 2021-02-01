@@ -1,6 +1,6 @@
-import { ChildAtom, IChildState, setChildNum } from './data/child.atom';
+import { ChildAtom, setChildNum } from './data/child.atom';
 import { declareAction, declareAtom } from '../src';
-import { ParentAtom, setParentStr } from './data/parent.atom';
+import { ParentAtom } from './data/parent.atom';
 
 describe('Atom', () => {
     describe('properties', () => {

@@ -5,14 +5,13 @@ import {
     PayloadActionCreator,
     ActionCreatorWithParams,
 } from './declareAction';
-import { PayloadReducer, TargetId } from './common';
-import { StateProvider } from './provider';
+import { PayloadReducer } from './common';
 
 const atomSymbol = Symbol('Atom');
 
 export type AtomName = string | Symbol;
 
-export interface Atom<TState> extends StateProvider<TState> {
+export interface Atom<TState> {
     readonly [atomSymbol]: Symbol;
 
     readonly atomName: AtomName;

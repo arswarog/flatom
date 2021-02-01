@@ -1,7 +1,5 @@
 export type PayloadReducer<TState, TPayload> = (state: TState, payload: TPayload) => TState;
 
-export type TargetId = string | Symbol
-
 export interface Subscription {
     (): void;
 
