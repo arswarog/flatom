@@ -16,12 +16,21 @@ export interface ActionCreator<TPayload> {
 
     readonly type: ActionType;
 
-    (param: TPayload): { type: string, payload: TPayload };
+    (payload?: TPayload): { type: string, payload: TPayload };
 }
 
-export type ActionCreatorWithParams<TPayload extends object, TParams extends object> = ActionCreator<TPayload>;
+export interface PayloadActionCreator<TPayload> {
+    readonly [actionCreatorSymbol]: Symbol;
 
-export function declareAction<TPayload extends object>(type: string): ActionCreator<TPayload>;
+    readonly type: ActionType;
+
+    (payload: TPayload): { type: string, payload: TPayload };
+}
+
+export type ActionCreatorWithParams<TPayload, TParams extends object> = PayloadActionCreator<TPayload>;
+
+export function declareAction(type: string): ActionCreator<any>;
+export function declareAction<TPayload extends object>(type: string): PayloadActionCreator<TPayload>;
 export function declareAction<TPayload extends object, TParams extends object>(
     type: string,
     prepare: (params: TParams) => TPayload,

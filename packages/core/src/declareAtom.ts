@@ -1,4 +1,10 @@
-import { AnyAction, ActionCreator, isActionCreator } from './declareAction';
+import {
+    AnyAction,
+    ActionCreator,
+    isActionCreator,
+    PayloadActionCreator,
+    ActionCreatorWithParams,
+} from './declareAction';
 import { PayloadReducer, TargetId } from './common';
 import { StateProvider } from './provider';
 
@@ -15,7 +21,7 @@ export interface Atom<TState> extends StateProvider<TState> {
 }
 
 interface ReducerCreator<TState> {
-    <TPayload>(actionCreator: ActionCreator<TPayload>, reducer: PayloadReducer<TState, TPayload>): void;
+    <TPayload>(actionCreator: ActionCreator<TPayload> | PayloadActionCreator<TPayload> | ActionCreatorWithParams<TPayload, any>, reducer: PayloadReducer<TState, TPayload>): void;
 
     <TPayload>(atom: Atom<TPayload>, reducer: PayloadReducer<TState, TPayload>): void;
 
@@ -32,11 +38,15 @@ export function declareAtom<TState extends object>(
     let other: PayloadReducer<TState, any> | undefined;
 
     const on: any = <T>(target: Atom<any> | ActionCreator<any>, reducer: PayloadReducer<TState, T>) => {
-        if (isAtom(target))
+        if (isAtom(target)) {
+            if (reducers.has(target))
+                throw new Error(`Reaction for atom "${target.atomName}" already set`);
             reducers.set(target, reducer);
-        else if (isActionCreator(target))
+        } else if (isActionCreator(target)) {
+            if (reducers.has(target.type))
+                throw new Error(`Reaction for action "${target.type}" already set`);
             reducers.set(target.type, reducer);
-        else
+        } else
             throw new Error('Invalid target');
     };
     on.other = <TPayload>(reducer: (state: TState, action: AnyAction<TPayload>) => TState) => {

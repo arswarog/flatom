@@ -16,42 +16,23 @@ describe('Atom', () => {
     });
     describe('reducer functionality', () => {
         test('atom', () => {
-            const initialState: IChildState = {
-                num: 0,
-                str: '',
-            };
-
-            const state = ParentAtom(initialState, {atom: ChildAtom, state: {num: 10}} as any);
+            const state = ParentAtom(undefined, {atom: ChildAtom, state: {num: 10}} as any);
 
             expect(state).toEqual({
                 num: 10,
-                str: '',
+                str: 'test',
             });
         });
         test('action', () => {
-            const initialState: IChildState = {
-                num: 0,
-                str: '',
-            };
-
-            const state = ChildAtom(initialState, setNum({value: 10}));
+            const state = ChildAtom(undefined, setNum({value: 10}));
 
             expect(state).toEqual({
                 num: 10,
-                str: '',
             });
         });
         test('unknown action and state by default', () => {
-            const AnotherChildAtom = declareAtom<IChildState>(
-                'test',
-                {
-                    num: 0,
-                    str: 'test',
-                },
-                on => [],
-            );
-
-            const state = AnotherChildAtom(undefined, setNum({value: 10}));
+            // act
+            const state = ParentAtom(undefined, setNum({value: 10}));
 
             expect(state).toEqual({
                 num: 0,
@@ -59,62 +40,35 @@ describe('Atom', () => {
             });
         });
         describe('on.other', () => {
+            // arrange
             const someAction = declareAction('some action');
-            const AnotherChildAtom = declareAtom<IChildState>(
-                'test',
-                {
-                    num: 0,
-                    str: 'test',
-                },
-                on => [
-                    on(setNum, (state, {value}) => {
-                        return {
-                            ...state,
-                            num: value,
-                        };
-                    }),
-                    on.other((state, {type}) => {
-                        return {
-                            str: type,
-                            num: state.num + 1,
-                        };
-                    }),
-                ],
-            );
 
             test('known action', () => {
-                const initialState: IChildState = {
-                    num: 0,
-                    str: '',
-                };
+                // act
+                const state = ChildAtom(undefined, setNum({value: 10}));
 
-                const state = AnotherChildAtom(initialState, setNum({value: 10}));
-
+                // assert
                 expect(state).toEqual({
                     num: 10,
-                    str: '',
                 });
             });
             test('other action', () => {
                 // arrange
 
                 // act
-                const state = AnotherChildAtom(undefined, someAction({})); // fixme
+                const state = ChildAtom(undefined, someAction());
 
                 // assert
                 expect(state).toEqual({
-                    num: 1,
-                    str: 'some action',
+                    num: 0,
+                    type: 'some action',
+                    payload: undefined,
                 });
             });
         });
         test('invalid action', () => {
-            const initialState: IChildState = {
-                num: 0,
-                str: '',
-            };
-
-            expect(() => ChildAtom(initialState, {} as any)).toThrow();
+            // assert
+            expect(() => ChildAtom(undefined, {} as any)).toThrow();
         });
     });
 });
