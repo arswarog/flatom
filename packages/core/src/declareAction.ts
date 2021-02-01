@@ -9,6 +9,8 @@ const actionCreatorSymbol = Symbol('ActionCreator');
 
 export type ActionType = string;
 
+export type PayloadOf<T> = T extends ActionCreator<infer R> ? R : never;
+
 export interface ActionCreator<TPayload> {
     readonly [actionCreatorSymbol]: Symbol;
 

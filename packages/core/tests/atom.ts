@@ -41,9 +41,25 @@ describe('Atom', () => {
                 str: '',
             });
         });
-        test('other action', () => {
-            // arrange
-            const setNumEx = declareAction<{ value: number }>('set num ex');
+        test('unknown action and state by default', () => {
+            const AnotherChildAtom = declareAtom<IChildState>(
+                'test',
+                {
+                    num: 0,
+                    str: 'test',
+                },
+                on => [],
+            );
+
+            const state = AnotherChildAtom(undefined, setNum({value: 10}));
+
+            expect(state).toEqual({
+                num: 0,
+                str: 'test',
+            });
+        });
+        describe('on.other', () => {
+            const someAction = declareAction('some action');
             const AnotherChildAtom = declareAtom<IChildState>(
                 'test',
                 {
@@ -57,26 +73,39 @@ describe('Atom', () => {
                             num: value,
                         };
                     }),
-                    on.other((state, {type, payload}) => {
+                    on.other((state, {type}) => {
                         return {
-                            str
-                            num: value,
+                            str: type,
+                            num: state.num + 1,
                         };
                     }),
                 ],
             );
-            const initialState: IChildState = {
-                num: 0,
-                str: '',
-            };
 
-            // act
-            const state = AnotherChildAtom(initialState, setNumEx({value: 100}));
+            test('known action', () => {
+                const initialState: IChildState = {
+                    num: 0,
+                    str: '',
+                };
 
-            // assert
-            expect(state).toEqual({
-                num: 100,
-                str: '',
+                const state = AnotherChildAtom(initialState, setNum({value: 10}));
+
+                expect(state).toEqual({
+                    num: 10,
+                    str: '',
+                });
+            });
+            test('other action', () => {
+                // arrange
+
+                // act
+                const state = AnotherChildAtom(undefined, someAction({})); // fixme
+
+                // assert
+                expect(state).toEqual({
+                    num: 1,
+                    str: 'some action',
+                });
             });
         });
         test('invalid action', () => {

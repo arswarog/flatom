@@ -11,13 +11,15 @@ export interface Atom<TState> extends StateProvider<TState> {
 
     readonly atomName: AtomName;
 
-    (state: TState, action: AnyAction): TState;
+    (state: TState | undefined, action: AnyAction): TState;
 }
 
 interface ReducerCreator<TState> {
     <TPayload>(actionCreator: ActionCreator<TPayload>, reducer: PayloadReducer<TState, TPayload>): void;
 
     <TPayload>(atom: Atom<TPayload>, reducer: PayloadReducer<TState, TPayload>): void;
+
+    other<TPayload>(reducer: (state: TState, action: AnyAction<TPayload>) => TState): void;
 }
 
 export function declareAtom<TState extends object>(
@@ -27,9 +29,9 @@ export function declareAtom<TState extends object>(
 ): Atom<TState> {
     const reducers: Map<string | Atom<any>, PayloadReducer<TState, any>> = new Map();
 
-    let other: PayloadReducer<TState, any>;
+    let other: PayloadReducer<TState, any> | undefined;
 
-    const on: ReducerCreator<TState> = <T>(target: Atom<any> | ActionCreator<any>, reducer: PayloadReducer<TState, T>) => {
+    const on: any = <T>(target: Atom<any> | ActionCreator<any>, reducer: PayloadReducer<TState, T>) => {
         if (isAtom(target))
             reducers.set(target, reducer);
         else if (isActionCreator(target))
@@ -37,15 +39,26 @@ export function declareAtom<TState extends object>(
         else
             throw new Error('Invalid target');
     };
+    on.other = <TPayload>(reducer: (state: TState, action: AnyAction<TPayload>) => TState) => {
+        if (other)
+            throw new Error('on.other already set');
+
+        other = reducer;
+    };
 
     reducerCreator(on);
 
     const atom: any = (state: TState, action: AnyAction | { atom: Atom<any>, state: any }) => {
+        if (!state)
+            state = initialState;
+
         if ('type' in action) {
             const reducer = reducers.get(action.type);
             return reducer
                 ? reducer(state, action.payload)
-                : state;
+                : other
+                    ? other(state, action)
+                    : state;
         } else if ('atom' in action) {
             const reducer = reducers.get(action.atom);
             return reducer
