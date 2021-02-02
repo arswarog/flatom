@@ -1,4 +1,4 @@
-import { ChildAtom, setChildNum } from './data/child.atom';
+import { CurrentProjectAtom, setChildNum } from './data/currentProject.atom';
 import { declareAction, declareAtom } from '../src';
 import { ParentAtom } from './data/parent.atom';
 
@@ -16,7 +16,7 @@ describe('Atom', () => {
     });
     describe('reducer functionality', () => {
         test('atom', () => {
-            const state = ParentAtom(undefined, {type: ChildAtom, payload: {num: 10}} as any);
+            const state = ParentAtom(undefined, {type: CurrentProjectAtom, payload: {num: 10}} as any);
 
             expect(state).toEqual({
                 childNum: 10,
@@ -24,7 +24,7 @@ describe('Atom', () => {
             });
         });
         test('action', () => {
-            const state = ChildAtom(undefined, setChildNum({value: 10}));
+            const state = CurrentProjectAtom(undefined, setChildNum({value: 10}));
 
             expect(state).toEqual({
                 num: 10,
@@ -45,7 +45,7 @@ describe('Atom', () => {
 
             test('known action', () => {
                 // act
-                const state = ChildAtom(undefined, setChildNum({value: 10}));
+                const state = CurrentProjectAtom(undefined, setChildNum({value: 10}));
 
                 // assert
                 expect(state).toEqual({
@@ -56,7 +56,7 @@ describe('Atom', () => {
                 // arrange
 
                 // act
-                const state = ChildAtom(undefined, someAction());
+                const state = CurrentProjectAtom(undefined, someAction());
 
                 // assert
                 expect(state).toEqual({
@@ -68,7 +68,7 @@ describe('Atom', () => {
         });
         test('invalid action', () => {
             // assert
-            const state = ChildAtom(undefined, {} as any);
+            const state = CurrentProjectAtom(undefined, {} as any);
 
             expect(state).toEqual({
                 num: 0,

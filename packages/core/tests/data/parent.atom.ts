@@ -1,5 +1,5 @@
 import { declareAtom, declareAction } from '../../src';
-import { ChildAtom } from './child.atom';
+import { CurrentProjectAtom } from './currentProject.atom';
 
 export interface IParentState {
     childNum: number;
@@ -20,7 +20,7 @@ export const ParentAtom = declareAtom<IParentState>(
         str: 'test',
     },
     on => [
-        on(ChildAtom, (state, childState) => {
+        on(CurrentProjectAtom, (state, childState) => {
             return {
                 ...state,
                 childNum: childState.num,

@@ -1,6 +1,8 @@
 import { createStore } from '../src';
-import { ChildAtom, setChildNum } from './data/child.atom';
+import { CurrentProjectAtom, setChildNum } from './data/currentProject.atom';
 import { ParentAtom } from './data/parent.atom';
+import { IProject, ProjectsAtom } from './data/projects.atom';
+import { ValueProvider } from '../src/provider';
 
 describe('Store', () => {
     describe('atoms', () => {
@@ -9,24 +11,24 @@ describe('Store', () => {
             const store = createStore();
 
             // act
-            store.subscribe(ChildAtom);
+            store.subscribe(CurrentProjectAtom);
 
             // assert
             expect(store.getState()).toEqual({});
-            expect(store.getState(ChildAtom)).toEqual({
+            expect(store.getState(CurrentProjectAtom)).toEqual({
                 num: 0,
             });
         });
         test('simple atom', () => {
             // arrange
             const store = createStore();
-            store.subscribe(ChildAtom);
+            store.subscribe(CurrentProjectAtom);
 
             // act
             store.dispatch(setChildNum({value: 5}));
 
             // assert
-            expect(store.getState(ChildAtom)).toEqual({
+            expect(store.getState(CurrentProjectAtom)).toEqual({
                 num: 5,
             });
             expect(store.getState()).toEqual({
@@ -57,7 +59,7 @@ describe('Store', () => {
                 childNum: 5,
                 str: 'test',
             });
-            expect(store.getState(ChildAtom)).toEqual({
+            expect(store.getState(CurrentProjectAtom)).toEqual({
                 num: 5,
             });
         });
@@ -76,7 +78,7 @@ describe('Store', () => {
                 childNum: 0,
                 str: 'test',
             });
-            expect(store.getState(ChildAtom)).toEqual({
+            expect(store.getState(CurrentProjectAtom)).toEqual({
                 num: 0,
             });
             expect(store.getState()).toEqual({});
@@ -89,7 +91,7 @@ describe('Store', () => {
             let value: any;
 
             // act
-            store.subscribe(ChildAtom, (state) => value = state);
+            store.subscribe(CurrentProjectAtom, (state) => value = state);
             store.dispatch(setChildNum({value: 10}));
 
             // assert
@@ -120,6 +122,38 @@ describe('Store', () => {
             // assert
             store.dispatch(setChildNum({value: 10}));
             expect(value).toEqual({value: 10});
+        });
+    });
+    describe('resolve', () => {
+        test('more then one providers', () => {
+            // arrange
+            const store = createStore();
+
+            // act
+            const currentProject = store.resolve(CurrentProjectAtom);
+
+            // assert
+            expect(currentProject).toEqual({
+                num: 0,
+            });
+        });
+        test('more then one providers', () => {
+            // arrange
+            const store = createStore();
+
+            // act
+            const [currentProject, projects] = store.resolve(CurrentProjectAtom, ProjectsAtom);
+
+            // assert
+            expect(currentProject).toEqual({
+                num: 0,
+            });
+            expect(projects).toEqual({
+                list: new Map<number, IProject>([
+                    [1, {id: 1, name: 'First project'}],
+                    [2, {id: 2, name: 'Second project'}],
+                ]),
+            });
         });
     });
 });

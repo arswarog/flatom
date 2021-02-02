@@ -2,14 +2,14 @@ import { ReadonlyStore } from './store.types';
 import { AnyAction, AnyActionCreator } from './declareAction';
 import { Atom, AtomName, isAtom } from './declareAtom';
 import { createSubscription, Subscription } from './common';
+import { ValueProvider, ValueProviders } from './provider';
 
 export interface Store extends ReadonlyStore {
     dispatch(action: AnyAction): Promise<any>;
-}
 
-interface AtomMeta<T = any> {
-    atom: Atom<T>;
-    subscriptions: ((payload: any) => void)[];
+    resolve<T extends any>(provider: ValueProvider<T>): T;
+
+    resolve<T extends ReadonlyArray<any>>(...providers: ValueProviders<T>): T;
 }
 
 export function createStore(): Store {
@@ -100,9 +100,22 @@ export function createStore(): Store {
         return state[atom.atomName] || atom(undefined, {type: ''});
     }
 
+    const readonlyStore: ReadonlyStore = {
+        getState,
+        subscribe,
+    };
+
+    function resolve(...providers: ValueProvider<any>[]): any | any[] {
+        if (providers.length === 1)
+            return providers[0].getValue(readonlyStore);
+        else
+            return providers.map(provider => provider.getValue(readonlyStore));
+    }
+
     return {
         subscribe,
         dispatch,
         getState,
+        resolve: resolve as any,
     };
 }

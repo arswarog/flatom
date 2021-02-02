@@ -1,6 +1,7 @@
 import { declareAtom, declareAction } from '../../src';
+import { IProject, ProjectsAtom } from './projects.atom';
 
-export interface IChildState {
+export interface ICurrentProjectState {
     num: number;
     type?: string;
     payload?: any;
@@ -8,8 +9,15 @@ export interface IChildState {
 
 export const setChildNum = declareAction<{ value: number }>('set child num');
 export const incrementChildNum = declareAction('increment child num');
+export const chooseProject = declareAction(
+    'choose project',
+    [ProjectsAtom],
+    ({id}: { id: number }, projects) => {
+        return projects.list.get(id)!;
+    },
+);
 
-export const ChildAtom = declareAtom<IChildState>(
+export const CurrentProjectAtom = declareAtom<ICurrentProjectState>(
     'child',
     {
         num: 0,
@@ -25,6 +33,13 @@ export const ChildAtom = declareAtom<IChildState>(
             return {
                 ...state,
                 num: state.num + 1,
+            };
+        }),
+        on(chooseProject, (state, project) => {
+            return {
+                ...state,
+                num: project.id,
+                type: project.name,
             };
         }),
         on.other((state, action) => {

@@ -1,4 +1,6 @@
-import { declareAction } from '../src';
+import { createStore, declareAction } from '../src';
+import { chooseProject, CurrentProjectAtom } from './data/currentProject.atom';
+import { ParentAtom } from './data/parent.atom';
 
 describe('ActionCreator', () => {
     test('simple action', () => {
@@ -29,6 +31,26 @@ describe('ActionCreator', () => {
                 },
                 params: {
                     val: 10,
+                },
+            });
+        });
+    });
+
+    describe('providers', () => {
+        test('atom', () => {
+            // arrange
+            const store = createStore();
+
+            const action = chooseProject({id: 1}, store);
+            expect(chooseProject.type).toBe('choose project');
+            expect(action).toEqual({
+                type: 'choose project',
+                payload: {
+                    id: 1,
+                    name: 'First project',
+                },
+                params: {
+                    id: 1,
                 },
             });
         });

@@ -6,12 +6,14 @@ import {
     ActionCreatorWithParams,
 } from './declareAction';
 import { PayloadReducer } from './common';
+import { ValueProvider } from './provider';
+import { Store } from './store';
 
 const atomSymbol = Symbol('Atom');
 
 export type AtomName = string; // fixme: string | symbol;
 
-export interface Atom<TState> {
+export interface Atom<TState> extends ValueProvider<TState> {
     readonly [atomSymbol]: symbol;
 
     readonly atomName: AtomName;
@@ -84,6 +86,7 @@ export function declareAtom<TState extends object>(
     atom.atomName = atomName;
     atom[atomSymbol] = atomSymbol;
     atom.relatedAtoms = relatedAtoms;
+    atom.getValue = (store: Store) => store.getState(atom);
     return atom;
 }
 
