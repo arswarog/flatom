@@ -12,4 +12,25 @@ describe('ActionCreator', () => {
             },
         });
     });
+
+    describe('prepare actions', () => {
+        test('modifier', () => {
+            const setNum = declareAction(
+                'set num',
+                ({val}: { val: number }) => ({value: val * 2}),
+            );
+
+            const action = setNum({val: 10});
+            expect(setNum.type).toBe('set num');
+            expect(action).toEqual({
+                type: 'set num',
+                payload: {
+                    value: 20,
+                },
+                params: {
+                    val: 10,
+                },
+            });
+        });
+    });
 });

@@ -29,22 +29,30 @@ export interface PayloadActionCreator<TPayload> {
     (payload: TPayload): { type: string, payload: TPayload };
 }
 
-export type ActionCreatorWithParams<TPayload, TParams extends object> = PayloadActionCreator<TPayload>;
+export interface ActionCreatorWithParams<TPayload, TParams extends object> extends PayloadActionCreator<TPayload> {
+    (params: TParams): { type: string, payload: TPayload };
+}
 
 export function declareAction(type: string): ActionCreator<any>;
 export function declareAction<TPayload extends object>(type: string): PayloadActionCreator<TPayload>;
 export function declareAction<TPayload extends object, TParams extends object>(
     type: string,
-    prepare: (params: TParams) => TPayload,
-): ActionCreator<TPayload>;
+    modifier: (params: TParams) => TPayload,
+): ActionCreatorWithParams<TPayload, TParams>;
 export function declareAction<TParams extends object, TPayload extends object>(
     type: string,
-    prepare?: (payload: TParams, ...args: any[]) => TPayload,
+    modifier?: (payload: TParams, ...args: any[]) => TPayload,
 ): ActionCreator<TPayload> {
-    const actionCreator: any = (payload: TPayload) => ({
-        type,
-        payload,
-    });
+    const actionCreator: any = modifier && typeof modifier === 'function'
+        ? (params: TParams) => ({
+            type,
+            payload: modifier(params),
+            params,
+        })
+        : (payload: TPayload) => ({
+            type,
+            payload,
+        });
     actionCreator.type = type;
     actionCreator[actionCreatorSymbol] = actionCreatorSymbol;
     return actionCreator as ActionCreator<TPayload>;
