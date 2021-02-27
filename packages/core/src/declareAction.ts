@@ -6,15 +6,11 @@ export interface AnyAction<T = any> {
     payload?: T;
 }
 
-const actionCreatorSymbol = Symbol('ActionCreator');
-
 export type ActionType = string;
 
 export type PayloadOf<T> = T extends ActionCreator<infer R> ? R : never;
 
 export interface AnyActionCreator<TPayload> {
-    readonly [actionCreatorSymbol]: Symbol;
-
     readonly type: ActionType;
 
     (payload?: TPayload): { type: string, payload: TPayload };
@@ -24,11 +20,7 @@ export interface ActionCreator<TPayload> extends AnyActionCreator<TPayload> {
     (payload: TPayload): { type: string, payload: TPayload };
 }
 
-export interface PayloadActionCreator<TPayload> {
-    readonly [actionCreatorSymbol]: Symbol;
-
-    readonly type: ActionType;
-
+export interface PayloadActionCreator<TPayload> extends AnyActionCreator<TPayload> {
     (payload: TPayload): { type: string, payload: TPayload };
 }
 
@@ -113,7 +105,6 @@ export function declareAction<TParams extends object, TPayload extends object>(
 function makeActionCreator<TPayload>(type: string, fn: (params?: any, store?: Store) => any): ActionCreator<TPayload> {
     const result: any = fn;
     result.type = type;
-    result[actionCreatorSymbol] = actionCreatorSymbol;
     return result;
 }
 
@@ -130,8 +121,8 @@ function makeActionCreatorWithProviders(type: string, modifier: (payload: any, .
         if (!store)
             throw new Error('Store is required');
 
-        const values = store.resolve(...providers);
-
+        const values = store.resolveAll(...providers);
+        const payload = modifier(params, ...values);
         return {
             type,
             payload: modifier(params, ...values),
@@ -141,5 +132,5 @@ function makeActionCreatorWithProviders(type: string, modifier: (payload: any, .
 }
 
 export function isActionCreator<T>(target: any): target is ActionCreator<T> {
-    return target[actionCreatorSymbol] === actionCreatorSymbol;
+    return typeof target === 'function' && typeof target.type === 'string';
 }

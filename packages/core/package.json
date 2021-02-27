@@ -20,20 +20,20 @@
     "test": "tests"
   },
   "files": [
-    "src"
+    "/README.md",
+    "/package.json",
+    "/src",
+    "/dist"
   ],
   "publishConfig": {
     "registry": "http://localhost:4873"
   },
   "scripts": {
-    "prepublishOnly": "npm run rebuild && npm run test",
+    "prepublishOnly": "npm run rebuild",
     "postpublish": "npm run clean",
-    "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --external=react,@flatom/core",
+    "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --no-compress --external=react,@flatom/core",
     "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf build/",
     "rebuild": "npm run clean && npm run build",
-    "test": "cross-env fixme=fixme ../../node_modules/.bin/jest",
-    "test:watch": "cross-env fixme=fixme ../../node_modules/.bin/jest --watch",
-    "test:debug": "node --inspect-brk ../../node_modules/.bin/jest --runInBand",
     "bench": "npm run rebuild && npm run bench:now && npm run clean",
     "bench:now": "cross-env fixme=fixme ../../node_modules/.bin/ts-node -P benchmark/tsconfig.json benchmark",
     "show-perf": "node ./tools/showPerfResults",

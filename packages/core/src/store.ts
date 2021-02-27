@@ -4,28 +4,38 @@ import { Atom, AtomName, isAtom } from './declareAtom';
 import { createSubscription, Subscription } from './common';
 import { ValueProvider, ValueProviders } from './provider';
 
+type StoreSubscription = (state: Record<AtomName, any>, action: AnyAction) => void;
+
 export interface Store extends ReadonlyStore {
     dispatch(action: AnyAction): Promise<any>;
 
     resolve<T extends any>(provider: ValueProvider<T>): T;
 
-    resolve<T extends ReadonlyArray<any>>(...providers: ValueProviders<T>): T;
+    resolveAll<T extends ReadonlyArray<any>>(...providers: ValueProviders<T>): T;
 }
 
-export function createStore(): Store {
-    let state: Record<AtomName, any> = {};
+export function createStore(initialState: Record<AtomName, any> = {}): Store {
+    let state: Record<AtomName, any> = initialState;
     let atoms: Atom<any>[] = [];
+    let storeSubscriptions = new Set<StoreSubscription>();
     let atomSubscriptions = new Map<Atom<any>, Subscription[]>();
     let subscriptions = new Map<any, ((payload: any) => void)[]>();
 
-    function subscribe(target: Atom<any> | AnyActionCreator<any>, cb: (payload?: any) => void = (() => null)): Subscription {
-        const subscribeTarget = isAtom(target) ? target : target.type;
+    function subscribe(cb: StoreSubscription): Subscription;
+    function subscribe(target: Atom<any> | AnyActionCreator<any>, cb: (payload?: any) => void): Subscription;
+    function subscribe(target: Atom<any> | AnyActionCreator<any> | StoreSubscription, cb?: (payload?: any) => void): Subscription {
+        if (cb === void 0) {
+            storeSubscriptions.add(target as any);
+            return createSubscription(() => storeSubscriptions.delete(target as any));
+        }
+
+        const subscribeTarget = isAtom(target) ? target : (target as AnyActionCreator<any>).type;
 
         if (!subscriptions.has(subscribeTarget)) {
             subscriptions.set(subscribeTarget, []);
 
             if (isAtom(target)) {
-                atomSubscriptions.set(target, target.relatedAtoms.map(rel => subscribe(rel)));
+                atomSubscriptions.set(target, target.relatedAtoms.map(rel => subscribe(rel, () => null)));
                 atoms.push(target);
             }
         }
@@ -44,6 +54,9 @@ export function createStore(): Store {
                 atomSubscriptions.get(target)!.forEach(cb => cb());
                 atomSubscriptions.delete(target);
                 delete state[target.atomName];
+
+                if (atoms.every(atom => atom.relatedAtoms.indexOf(target) === -1))
+                    atoms = atoms.filter(atom => atom !== target);
             }
         });
     }
@@ -90,6 +103,8 @@ export function createStore(): Store {
         if (cbList)
             cbList.forEach(cb => cb(action.payload));
 
+        storeSubscriptions.forEach(cb => cb(state, action));
+
         return Promise.resolve();
     }
 
@@ -105,17 +120,19 @@ export function createStore(): Store {
         subscribe,
     };
 
-    function resolve(...providers: ValueProvider<any>[]): any | any[] {
-        if (providers.length === 1)
-            return providers[0].getValue(readonlyStore);
-        else
-            return providers.map(provider => provider.getValue(readonlyStore));
+    function resolve<T extends any>(provider: ValueProvider<T>): T {
+        return provider.getValue(readonlyStore);
+    }
+
+    function resolveAll<T extends ReadonlyArray<any>>(...providers: ValueProviders<T>): T {
+        return providers.map(provider => provider.getValue(readonlyStore)) as any;
     }
 
     return {
         subscribe,
         dispatch,
         getState,
-        resolve: resolve as any,
+        resolve,
+        resolveAll,
     };
 }

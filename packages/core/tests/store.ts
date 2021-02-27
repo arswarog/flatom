@@ -1,5 +1,5 @@
 import { createStore } from '../src';
-import { CurrentProjectAtom, setChildNum } from './data/currentProject.atom';
+import { CurrentProjectAtom, incrementChildNum, setChildNum } from './data/currentProject.atom';
 import { ParentAtom } from './data/parent.atom';
 import { IProject, ProjectsAtom } from './data/projects.atom';
 import { ValueProvider } from '../src/provider';
@@ -11,7 +11,7 @@ describe('Store', () => {
             const store = createStore();
 
             // act
-            store.subscribe(CurrentProjectAtom);
+            store.subscribe(CurrentProjectAtom, () => null);
 
             // assert
             expect(store.getState()).toEqual({});
@@ -22,7 +22,7 @@ describe('Store', () => {
         test('simple atom', () => {
             // arrange
             const store = createStore();
-            store.subscribe(CurrentProjectAtom);
+            store.subscribe(CurrentProjectAtom, () => null);
 
             // act
             store.dispatch(setChildNum({value: 5}));
@@ -40,7 +40,7 @@ describe('Store', () => {
         test('related atom', () => {
             // arrange
             const store = createStore();
-            store.subscribe(ParentAtom);
+            store.subscribe(ParentAtom, () => null);
 
             // act
             store.dispatch(setChildNum({value: 5}));
@@ -66,7 +66,7 @@ describe('Store', () => {
         test('delete unsubscribed atom', () => {
             // arrange
             const store = createStore();
-            const subscription = store.subscribe(ParentAtom);
+            const subscription = store.subscribe(ParentAtom, () => null);
 
             store.dispatch(setChildNum({value: 5}));
 
@@ -96,6 +96,22 @@ describe('Store', () => {
 
             // assert
             expect(value).toEqual({num: 10});
+        });
+        test('subscribe twice for same atom', () => {
+            // arrange
+            const store = createStore();
+
+            // act
+            const sub1 = store.subscribe(CurrentProjectAtom, () => null);
+            store.dispatch(incrementChildNum({}));
+            expect(store.getState(CurrentProjectAtom)).toEqual({num: 1});
+            sub1.unsubscribe();
+
+            store.subscribe(CurrentProjectAtom, () => null);
+            store.dispatch(incrementChildNum({}));
+
+            // assert
+            expect(store.getState(CurrentProjectAtom)).toEqual({num: 1});
         });
         test('subscribe for actions', () => {
             // arrange
@@ -142,7 +158,7 @@ describe('Store', () => {
             const store = createStore();
 
             // act
-            const [currentProject, projects] = store.resolve(CurrentProjectAtom, ProjectsAtom);
+            const [currentProject, projects] = store.resolveAll(CurrentProjectAtom, ProjectsAtom);
 
             // assert
             expect(currentProject).toEqual({
