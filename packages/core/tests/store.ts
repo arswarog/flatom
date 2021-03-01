@@ -2,7 +2,7 @@ import { createStore } from '../src';
 import { CurrentProjectAtom, incrementChildNum, setChildNum } from './data/currentProject.atom';
 import { ParentAtom } from './data/parent.atom';
 import { IProject, ProjectsAtom } from './data/projects.atom';
-import { ValueProvider } from '../src/provider';
+import { declareAtom } from '../../react/dist';
 
 describe('Store', () => {
     describe('atoms', () => {
@@ -23,6 +23,9 @@ describe('Store', () => {
             // arrange
             const store = createStore();
             store.subscribe(CurrentProjectAtom, () => null);
+            expect(store.getState(CurrentProjectAtom)).toEqual({
+                num: 0,
+            });
 
             // act
             store.dispatch(setChildNum({value: 5}));
@@ -69,6 +72,10 @@ describe('Store', () => {
             const subscription = store.subscribe(ParentAtom, () => null);
 
             store.dispatch(setChildNum({value: 5}));
+            expect(store.getState(ParentAtom)).toEqual({
+                childNum: 5,
+                str: 'test',
+            });
 
             // act
             subscription.unsubscribe();
@@ -83,8 +90,64 @@ describe('Store', () => {
             });
             expect(store.getState()).toEqual({});
         });
-    });
-    describe('subscriptions', () => {
+        test('not delete unsubscribed atom, if exist another parent', () => {
+            // arrange
+            let gcEvents = 0;
+            const AnotherParentAtom = declareAtom<{ childNum: number }>(
+                'anotherParent',
+                {childNum: 0},
+                on => on(CurrentProjectAtom, (_, {num}) => ({
+                    childNum: num,
+                })),
+            );
+            const store = createStore();
+            store.onGarbageCollected(() => gcEvents++);
+            const subscription = store.subscribe(ParentAtom, () => null);
+            const subscription2 = store.subscribe(AnotherParentAtom, () => null);
+
+            store.dispatch(setChildNum({value: 5}));
+            expect(store.getState()).toEqual({
+                child: {
+                    num: 5,
+                },
+                parent: {
+                    childNum: 5,
+                    str: 'test',
+                },
+                anotherParent: {
+                    childNum: 5,
+                },
+            });
+
+            // act 1
+            subscription.unsubscribe();
+
+            // assert
+            expect(store.getState()).toEqual({
+                child: {
+                    num: 5,
+                },
+                anotherParent: {
+                    childNum: 5,
+                },
+            });
+            expect(gcEvents).toBe(1);
+            gcEvents = 0;
+
+            // act 2
+            subscription2.unsubscribe();
+
+            // assert
+            expect(store.getState(ParentAtom)).toEqual({
+                childNum: 0,
+                str: 'test',
+            });
+            expect(store.getState(CurrentProjectAtom)).toEqual({
+                num: 0,
+            });
+            expect(store.getState()).toEqual({});
+            // expect(gcEvents).toBe(1); fixme
+        });
         test('subscribe for atoms', () => {
             // arrange
             const store = createStore();
@@ -113,6 +176,10 @@ describe('Store', () => {
             // assert
             expect(store.getState(CurrentProjectAtom)).toEqual({num: 1});
         });
+
+        // todo: атом не удаляется если есть зависимые атомы
+        // todo: проверить что удаляются ненужные атомы после удаления родительского
+
         test('subscribe for actions', () => {
             // arrange
             const store = createStore();

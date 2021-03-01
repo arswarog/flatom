@@ -12,14 +12,18 @@ export interface Store extends ReadonlyStore {
     resolve<T extends any>(provider: ValueProvider<T>): T;
 
     resolveAll<T extends ReadonlyArray<any>>(...providers: ValueProviders<T>): T;
+
+    onGarbageCollected(cb: () => void): Subscription;
 }
 
 export function createStore(initialState: Record<AtomName, any> = {}): Store {
     let state: Record<AtomName, any> = initialState;
     let atoms: Atom<any>[] = [];
     let storeSubscriptions = new Set<StoreSubscription>();
-    let atomSubscriptions = new Map<Atom<any>, Subscription[]>();
+    let innerSubscriptions = new Map<Atom<any>, Subscription[]>();
     let subscriptions = new Map<any, ((payload: any) => void)[]>();
+    let gcSubscriptions = new Set<Unsubscribe>();
+    let gc: Atom<any>[] | null = null;
 
     function subscribe(cb: StoreSubscription): Subscription;
     function subscribe(target: Atom<any> | AnyActionCreator<any>, cb: (payload?: any) => void): Subscription;
@@ -35,7 +39,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
             subscriptions.set(subscribeTarget, []);
 
             if (isAtom(target)) {
-                atomSubscriptions.set(target, target.relatedAtoms.map(rel => subscribe(rel, () => null)));
+                innerSubscriptions.set(target, target.relatedAtoms.map(rel => subscribe(rel, () => null)));
                 atoms.push(target);
             }
         }
@@ -50,15 +54,39 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
 
             subscriptions.delete(subscribeTarget);
 
-            if (isAtom(target)) {
-                atomSubscriptions.get(target)!.forEach(cb => cb());
-                atomSubscriptions.delete(target);
-                delete state[target.atomName];
-
-                if (atoms.every(atom => atom.relatedAtoms.indexOf(target) === -1))
-                    atoms = atoms.filter(atom => atom !== target);
-            }
+            if (isAtom(target))
+                removeAtom(target);
         });
+    }
+
+    function removeAtom(target: Atom<any>) {
+        if (!canRemoveAtom(target))
+            return;
+
+        if (gc) {
+            gc.push(target);
+            delete state[target.atomName];
+            atoms = atoms.filter(item => item !== target);
+            innerSubscriptions.get(target)!.forEach(cb => cb());
+            innerSubscriptions.delete(target);
+        } else {
+            gc = [];
+            removeAtom(target);
+            if (gc.length)
+                gcSubscriptions.forEach(cb => cb());
+            gc = null;
+        }
+    }
+
+    function canRemoveAtom(target: Atom<any>) {
+        if (subscriptions.has(target))
+            return false;
+        if (!target.relatedAtoms || !target.relatedAtoms.length)
+            return true;
+        if (atoms.some(atom => atom.relatedAtoms.indexOf(target) !== -1))
+            return false;
+
+        return true;
     }
 
     function dispatch(action: AnyAction): Promise<any> {
@@ -147,6 +175,11 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         return state;
     }
 
+    function onGarbageCollected(cb: () => void): Subscription {
+        gcSubscriptions.add(cb);
+        return createSubscription(() => gcSubscriptions.delete(cb));
+    }
+
     return {
         subscribe,
         dispatch,
@@ -154,5 +187,6 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         resolve,
         resolveAll,
         setState,
+        onGarbageCollected,
     };
 }
