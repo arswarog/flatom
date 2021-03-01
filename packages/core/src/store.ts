@@ -41,6 +41,11 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
             if (isAtom(target)) {
                 innerSubscriptions.set(target, target.relatedAtoms.map(rel => subscribe(rel, () => null)));
                 atoms.push(target);
+                const relatedAtoms = target.relatedAtoms || [];
+                state[target.atomName] = relatedAtoms.reduce(
+                    (state, atom) => target(state, {type: atom, payload: getState(atom)}),
+                    undefined,
+                );
             }
         }
 

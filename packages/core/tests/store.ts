@@ -90,6 +90,23 @@ describe('Store', () => {
             });
             expect(store.getState()).toEqual({});
         });
+        test('apply related atoms while init new atom', () => {
+            // arrange
+            const store = createStore();
+            store.subscribe(CurrentProjectAtom, () => null);
+
+            store.dispatch(setChildNum({value: 5}));
+            expect(store.getState(CurrentProjectAtom)).toEqual({
+                num: 5,
+            });
+
+            // act
+            store.subscribe(ParentAtom, () => null);
+            expect(store.getState(ParentAtom)).toEqual({
+                childNum: 5,
+                str: 'test',
+            });
+        });
         test('not delete unsubscribed atom, if exist another parent', () => {
             // arrange
             let gcEvents = 0;
