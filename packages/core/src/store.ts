@@ -1,12 +1,12 @@
-import { ReadonlyStore } from './store.types';
+import { ReadonlyStore, StoreSubscription } from './store.types';
 import { AnyAction, AnyActionCreator } from './declareAction';
 import { Atom, AtomName, isAtom } from './declareAtom';
-import { createSubscription, Subscription } from './common';
+import { createSubscription, Subscription, Unsubscribe } from './common';
 import { ValueProvider, ValueProviders } from './provider';
 
-type StoreSubscription = (state: Record<AtomName, any>, action: AnyAction) => void;
-
 export interface Store extends ReadonlyStore {
+    setState(newState: Record<AtomName, any>, type?: string): Record<AtomName, any>;
+
     dispatch(action: AnyAction): Promise<any>;
 
     resolve<T extends any>(provider: ValueProvider<T>): T;
@@ -88,6 +88,12 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
             state,
         );
 
+        notifyListeners(changedAtoms, action);
+
+        return Promise.resolve();
+    }
+
+    function notifyListeners(changedAtoms: Set<Atom<any>>, action: AnyAction) {
         // atom subscriptions
         changedAtoms.forEach(atom => {
             const cbList = subscriptions.get(atom);
@@ -104,8 +110,6 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
             cbList.forEach(cb => cb(action.payload));
 
         storeSubscriptions.forEach(cb => cb(state, action));
-
-        return Promise.resolve();
     }
 
     function getState(atom?: Atom<any>): any {
@@ -128,11 +132,27 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         return providers.map(provider => provider.getValue(readonlyStore)) as any;
     }
 
+    function setState(newState: Record<AtomName, any>, type = '@@SET_STATE'): Record<AtomName, any> {
+        const prepareState: Record<AtomName, any> = {};
+
+        atoms.forEach(atom => prepareState[atom.atomName] = atom(undefined, {type: ''}));
+
+        state = {
+            ...prepareState,
+            ...newState,
+        };
+
+        notifyListeners(new Set<Atom<any>>(atoms), {type});
+
+        return state;
+    }
+
     return {
         subscribe,
         dispatch,
         getState,
         resolve,
         resolveAll,
+        setState,
     };
 }

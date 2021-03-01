@@ -1,13 +1,15 @@
-import { Atom } from './declareAtom';
-import { ActionCreator, AnyActionCreator, PayloadActionCreator } from './declareAction';
+import { Atom, AtomName } from './declareAtom';
+import { ActionCreator, AnyAction, AnyActionCreator, PayloadActionCreator } from './declareAction';
 import { Subscription } from './common';
+
+export type StoreSubscription = (state: Record<AtomName, any>, action: AnyAction) => void;
 
 export interface ReadonlyStore {
     getState(): Record<string, any>;
 
     getState<T>(atom: Atom<T>): Readonly<T>;
 
-    subscribe(cb: (payload?: any) => void): Subscription;
+    subscribe(cb: StoreSubscription): Subscription;
 
     subscribe<T>(action: AnyActionCreator<T>, cb: () => void): Subscription;
 
