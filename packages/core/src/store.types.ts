@@ -9,6 +9,8 @@ export interface ReadonlyStore {
 
     getState<T>(atom: Atom<T>): Readonly<T>;
 
+    getState<T, TAtom>(atom: Atom<TAtom>, selector: (state: TAtom) => T): Readonly<T>;
+
     subscribe(cb: StoreSubscription): Subscription;
 
     subscribe<T>(action: AnyActionCreator<T>, cb: () => void): Subscription;

@@ -5,20 +5,37 @@ import { IProject, ProjectsAtom } from './data/projects.atom';
 import { declareAtom } from '../../react/dist';
 
 describe('Store', () => {
-    describe('atoms', () => {
-        test('subscribe but not change', () => {
-            // arrange
-            const store = createStore();
+    describe('getState', () => {
+        const store = createStore();
+        store.subscribe(ParentAtom, () => null);
 
-            // act
-            store.subscribe(CurrentProjectAtom, () => null);
-
-            // assert
-            expect(store.getState()).toEqual({});
+        test('get not subscribed atom state', () => {
             expect(store.getState(CurrentProjectAtom)).toEqual({
                 num: 0,
             });
         });
+        test('get all state', () => {
+            expect(store.getState()).toEqual({
+                child: {
+                    num: 0,
+                },
+                parent: {
+                    childNum: 0,
+                    str: 'test',
+                },
+            });
+        });
+        test('get atom state', () => {
+            expect(store.getState(ParentAtom)).toEqual({
+                childNum: 0,
+                str: 'test',
+            });
+        });
+        test('get atom state with selector', () => {
+            expect(store.getState(ParentAtom, ({childNum}) => childNum)).toEqual(0);
+        });
+    });
+    describe('atoms', () => {
         test('simple atom', () => {
             // arrange
             const store = createStore();

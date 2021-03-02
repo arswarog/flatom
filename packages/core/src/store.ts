@@ -44,7 +44,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
                 const relatedAtoms = target.relatedAtoms || [];
                 state[target.atomName] = relatedAtoms.reduce(
                     (state, atom) => target(state, {type: atom, payload: getState(atom)}),
-                    undefined,
+                    target(undefined, {type: ''}),
                 );
             }
         }
@@ -145,11 +145,14 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         storeSubscriptions.forEach(cb => cb(state, action));
     }
 
-    function getState(atom?: Atom<any>): any {
+    function getState(atom?: Atom<any>, selector?: (state: any) => any): any {
         if (!atom)
             return state;
 
-        return state[atom.atomName] || atom(undefined, {type: ''});
+        const atomState = state[atom.atomName] || atom(undefined, {type: ''});
+        return selector
+            ? selector(atomState)
+            : atomState;
     }
 
     const readonlyStore: ReadonlyStore = {
