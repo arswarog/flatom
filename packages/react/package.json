@@ -1,6 +1,6 @@
 {
   "name": "@flatom/react",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "React binding for @factom/core",
   "keywords": [
     "State",
@@ -58,6 +58,6 @@
     "cross-env": "^7.0.3"
   },
   "devDependencies": {
-    "@flatom/core": "^0.1.12"
+    "@flatom/core": "^0.1.13"
   }
 }
