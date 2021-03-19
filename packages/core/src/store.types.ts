@@ -7,9 +7,9 @@ export type StoreSubscription = (state: Record<AtomName, any>, action: AnyAction
 export interface ReadonlyStore {
     getState(): Record<string, any>;
 
-    getState<T>(atom: Atom<T>): Readonly<T>;
+    getState<TAtom>(atom: Atom<TAtom>): Readonly<TAtom>;
 
-    getState<T, TAtom>(atom: Atom<TAtom>, selector: (state: TAtom) => T): Readonly<T>;
+    getState<T, TAtom>(atom: Atom<TAtom>, selector?: (state: TAtom) => T): Readonly<T>;
 
     subscribe(cb: StoreSubscription): Subscription;
 

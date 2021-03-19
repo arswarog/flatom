@@ -1,7 +1,7 @@
 {
-  "name": "@flatom/core",
-  "version": "0.1.11",
-  "description": "Core package",
+  "name": "@flatom/react",
+  "version": "0.1.0",
+  "description": "React binding for @factom/core",
   "keywords": [
     "State",
     "manager"
@@ -31,8 +31,8 @@
   "scripts": {
     "prepublishOnly": "npm run rebuild",
     "postpublish": "npm run clean",
-    "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --no-compress --external=react,@flatom/core",
-    "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf build/",
+    "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --external=react,@flatom/core",
+    "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf dist/",
     "rebuild": "npm run clean && npm run build",
     "bench": "npm run rebuild && npm run bench:now && npm run clean",
     "bench:now": "cross-env fixme=fixme ../../node_modules/.bin/ts-node -P benchmark/tsconfig.json benchmark",
@@ -49,7 +49,14 @@
       "path": "dist/*.js"
     }
   ],
-  "dependencies": {
+  "peerDependencies": {
+    "@flatom/core": "^0.1.0",
+    "react": "^16.0.0"
+  },
+  "devDpendencies": {
     "cross-env": "^7.0.3"
+  },
+  "devDependencies": {
+    "@flatom/core": "^0.1.11"
   }
 }

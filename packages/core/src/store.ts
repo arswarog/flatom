@@ -150,6 +150,9 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
             return state;
 
         const atomState = state[atom.atomName] || atom(undefined, {type: ''});
+
+        if (selector && typeof selector !== 'function') throw new TypeError('[flatom] Invalid selector');
+
         return selector
             ? selector(atomState)
             : atomState;
