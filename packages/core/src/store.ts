@@ -1,20 +1,8 @@
-import { ReadonlyStore, StoreSubscription } from './store.types';
+import { ReadonlyStore, Store, StoreSubscription } from './store.types';
 import { AnyAction, AnyActionCreator } from './declareAction';
 import { Atom, AtomName, isAtom } from './declareAtom';
 import { createSubscription, Subscription, Unsubscribe } from './common';
 import { ValueProvider, ValueProviders } from './provider';
-
-export interface Store extends ReadonlyStore {
-    setState(newState: Record<AtomName, any>, type?: string): Record<AtomName, any>;
-
-    dispatch(action: AnyAction): Promise<any>;
-
-    resolve<T extends any>(provider: ValueProvider<T>): T;
-
-    resolveAll<T extends ReadonlyArray<any>>(...providers: ValueProviders<T>): T;
-
-    onGarbageCollected(cb: () => void): Subscription;
-}
 
 export function createStore(initialState: Record<AtomName, any> = {}): Store {
     let state: Record<AtomName, any> = initialState;
@@ -167,7 +155,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         return provider.getValue(readonlyStore);
     }
 
-    function resolveAll<T extends ReadonlyArray<any>>(...providers: ValueProviders<T>): T {
+    function resolveAll<T extends ReadonlyArray<any>>(providers: ValueProviders<T>): T {
         return providers.map(provider => provider.getValue(readonlyStore)) as any;
     }
 

@@ -1,8 +1,7 @@
-import { createStore } from '../src';
+import { createStore, declareAtom } from '../src';
 import { CurrentProjectAtom, incrementChildNum, setChildNum } from './data/currentProject.atom';
 import { ParentAtom } from './data/parent.atom';
 import { IProject, ProjectsAtom } from './data/projects.atom';
-import { declareAtom } from '../../react/dist';
 
 describe('Store', () => {
     describe('getState', () => {
@@ -220,7 +219,7 @@ describe('Store', () => {
             let value: any;
 
             // act
-            store.subscribe(setChildNum, (payload) => value = payload);
+            store.subscribe(setChildNum, payload => value = payload);
             store.dispatch(setChildNum({value: 10}));
 
             // assert
@@ -259,7 +258,7 @@ describe('Store', () => {
             const store = createStore();
 
             // act
-            const [currentProject, projects] = store.resolveAll(CurrentProjectAtom, ProjectsAtom);
+            const [currentProject, projects] = store.resolveAll([CurrentProjectAtom, ProjectsAtom]);
 
             // assert
             expect(currentProject).toEqual({

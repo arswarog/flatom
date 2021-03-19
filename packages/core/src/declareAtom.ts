@@ -1,25 +1,11 @@
 import {
     AnyAction,
     ActionCreator,
-    isActionCreator,
-    PayloadActionCreator,
-    ActionCreatorWithParams,
+    isActionCreator, PayloadActionCreator, ActionCreatorWithParams,
 } from './declareAction';
 import { PayloadReducer } from './common';
-import { ValueProvider } from './provider';
-import { Store } from './store';
-
-export type AtomName = string; // fixme: string | symbol;
-
-export interface Atom<TState> extends ValueProvider<TState> {
-    readonly atomName: AtomName;
-
-    readonly relatedAtoms: ReadonlyArray<Atom<any>>;
-
-    (state: TState | undefined, action: AnyAction): TState;
-
-    <T>(state: TState | undefined, action: { type: Atom<T>, payload: T }): TState;
-}
+import { Store } from './store.types';
+import { Atom, AtomName } from './atom.types';
 
 interface ReducerCreator<TState> {
     <TPayload>(actionCreator: ActionCreator<TPayload> | PayloadActionCreator<TPayload> | ActionCreatorWithParams<TPayload, any>, reducer: PayloadReducer<TState, TPayload>): void;

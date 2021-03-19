@@ -1,32 +1,6 @@
 import { ValueProvider } from './provider';
-import { Store } from './store';
-
-export interface AnyAction<T = any> {
-    type: string;
-    payload?: T;
-}
-
-export type ActionType = string;
-
-export type PayloadOf<T> = T extends ActionCreator<infer R> ? R : never;
-
-export interface AnyActionCreator<TPayload> {
-    readonly type: ActionType;
-
-    (payload?: TPayload): { type: string, payload: TPayload };
-}
-
-export interface ActionCreator<TPayload> extends AnyActionCreator<TPayload> {
-    (payload: TPayload): { type: string, payload: TPayload };
-}
-
-export interface PayloadActionCreator<TPayload> extends AnyActionCreator<TPayload> {
-    (payload: TPayload): { type: string, payload: TPayload };
-}
-
-export interface ActionCreatorWithParams<TPayload, TParams extends object> extends PayloadActionCreator<TPayload> {
-    (params: TParams, store?: Store): { type: string, payload: TPayload };
-}
+import { Store } from './store.types';
+import { ActionCreator, ActionCreatorWithParams, PayloadActionCreator } from './action.types';
 
 export function declareAction(type: string): ActionCreator<any>;
 export function declareAction<TPayload extends object>(type: string): PayloadActionCreator<TPayload>;
@@ -121,7 +95,7 @@ function makeActionCreatorWithProviders(type: string, modifier: (payload: any, .
         if (!store)
             throw new Error('Store is required');
 
-        const values = store.resolveAll(...providers);
+        const values = store.resolveAll(providers);
         const payload = modifier(params, ...values);
         return {
             type,
