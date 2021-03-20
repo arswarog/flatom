@@ -1,12 +1,16 @@
-import { ValueProvider } from './provider';
-import { AnyAction } from './declareAction';
+import { ValueProvider } from './provider.types';
+import { AnyAction } from './action.types';
 
 export type AtomName = string; // fixme: string | symbol;
 
 export interface Atom<TState> extends ValueProvider<TState> {
-    readonly atomName: AtomName;
+    readonly key: AtomName;
 
     readonly relatedAtoms: ReadonlyArray<Atom<any>>;
+
+    readonly discoveredActions: ReadonlyArray<string>;
+
+    readonly hasOtherReducer: boolean;
 
     (state: TState | undefined, action: AnyAction): TState;
 

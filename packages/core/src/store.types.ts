@@ -1,7 +1,7 @@
-import { Atom, AtomName } from './declareAtom';
-import { ActionCreator, AnyAction, AnyActionCreator, PayloadActionCreator } from './declareAction';
+import { Atom, AtomName } from './atom.types';
+import { ActionCreator, AnyAction, AnyActionCreator, PayloadActionCreator } from './action.types';
 import { Subscription } from './common';
-import { ValueProvider, ValueProviders } from './provider';
+import { ValueProvider, ValueProviders } from './provider.types';
 
 export type StoreSubscription = (state: Record<AtomName, any>, action: AnyAction) => void;
 
@@ -21,16 +21,16 @@ export interface ReadonlyStore {
     subscribe<T>(action: PayloadActionCreator<T>, cb: (payload: T) => void): Subscription;
 
     subscribe<T>(target: Atom<T> | AnyActionCreator<T>, cb: (state: T) => void): Subscription;
+
+    resolve<T extends any>(provider: ValueProvider<T>): T;
+
+    resolveAll<T extends ReadonlyArray<any>>(providers: ValueProviders<T>): T;
 }
 
 export interface Store extends ReadonlyStore {
     setState(newState: Record<AtomName, any>, type?: string): Record<AtomName, any>;
 
     dispatch(action: AnyAction): Promise<any>;
-
-    resolve<T extends any>(provider: ValueProvider<T>): T;
-
-    resolveAll<T extends ReadonlyArray<any>>(providers: ValueProviders<T>): T;
 
     onGarbageCollected(cb: () => void): Subscription;
 }

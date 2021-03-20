@@ -1,4 +1,4 @@
-import { ValueProvider } from './provider';
+import { ValueProvider } from './provider.types';
 import { Store } from './store.types';
 import { ActionCreator, ActionCreatorWithParams, PayloadActionCreator } from './action.types';
 

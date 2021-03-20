@@ -1,8 +1,9 @@
 import { ReadonlyStore, Store, StoreSubscription } from './store.types';
-import { AnyAction, AnyActionCreator } from './declareAction';
-import { Atom, AtomName, isAtom } from './declareAtom';
+import { AnyAction, AnyActionCreator } from './action.types';
+import { Atom, AtomName } from './atom.types';
 import { createSubscription, Subscription, Unsubscribe } from './common';
-import { ValueProvider, ValueProviders } from './provider';
+import { ValueProvider, ValueProviders } from './provider.types';
+import { isAtom } from './declareAtom';
 
 export function createStore(initialState: Record<AtomName, any> = {}): Store {
     let state: Record<AtomName, any> = initialState;
@@ -30,7 +31,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
                 innerSubscriptions.set(target, target.relatedAtoms.map(rel => subscribe(rel, () => null)));
                 atoms.push(target);
                 const relatedAtoms = target.relatedAtoms || [];
-                state[target.atomName] = relatedAtoms.reduce(
+                state[target.key] = relatedAtoms.reduce(
                     (state, atom) => target(state, {type: atom, payload: getState(atom)}),
                     target(undefined, {type: ''}),
                 );
@@ -58,7 +59,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
 
         if (gc) {
             gc.push(target);
-            delete state[target.atomName];
+            delete state[target.key];
             atoms = atoms.filter(item => item !== target);
             innerSubscriptions.get(target)!.forEach(cb => cb());
             innerSubscriptions.delete(target);
@@ -88,12 +89,12 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
 
         state = atoms.reduce(
             (accState, atom) => {
-                const lastLocalState = accState[atom.atomName];
+                const lastLocalState = accState[atom.key];
                 let localState = atom.relatedAtoms.reduce((accLocalState, relAtom) => {
                     if (!changedAtoms.has(relAtom))
                         return accLocalState;
 
-                    return atom(accLocalState, {type: relAtom, payload: accState[relAtom.atomName]});
+                    return atom(accLocalState, {type: relAtom, payload: accState[relAtom.key]});
                 }, lastLocalState);
 
                 localState = atom(localState, action);
@@ -103,7 +104,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
                 changedAtoms.add(atom);
                 return {
                     ...accState,
-                    [atom.atomName]: localState,
+                    [atom.key]: localState,
                 };
             },
             state,
@@ -120,7 +121,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
             const cbList = subscriptions.get(atom);
             if (!cbList) return;
 
-            const localState = state[atom.atomName];
+            const localState = state[atom.key];
             cbList.forEach(cb => cb && cb(localState));
         });
 
@@ -137,7 +138,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         if (!atom)
             return state;
 
-        const atomState = state[atom.atomName] || atom(undefined, {type: ''});
+        const atomState = state[atom.key] || atom(undefined, {type: ''});
 
         if (selector && typeof selector !== 'function') throw new TypeError('[flatom] Invalid selector');
 
@@ -149,6 +150,8 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
     const readonlyStore: ReadonlyStore = {
         getState,
         subscribe,
+        resolve,
+        resolveAll,
     };
 
     function resolve<T extends any>(provider: ValueProvider<T>): T {
@@ -162,7 +165,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
     function setState(newState: Record<AtomName, any>, type = '@@SET_STATE'): Record<AtomName, any> {
         const prepareState: Record<AtomName, any> = {};
 
-        atoms.forEach(atom => prepareState[atom.atomName] = atom(undefined, {type: ''}));
+        atoms.forEach(atom => prepareState[atom.key] = atom(undefined, {type: ''}));
 
         state = {
             ...prepareState,

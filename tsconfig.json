@@ -8,6 +8,7 @@
     "strict": true,
     "jsx": "react",
     "outDir": "lib",
+    "noImplicitAny": false,
     "lib": [
       "es2015"
     ],
