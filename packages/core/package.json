@@ -46,11 +46,12 @@
   },
   "size-limit": [
     {
-      "limit": "5 KB",
+      "limit": "3 KB",
       "path": "dist/*.js"
     }
   ],
-  "dependencies": {
-    "cross-env": "^7.0.3"
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "size-limit": "^4.10.1"
   }
 }

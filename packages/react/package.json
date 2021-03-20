@@ -46,7 +46,7 @@
   },
   "size-limit": [
     {
-      "limit": "5 KB",
+      "limit": "1 KB",
       "path": "dist/*.js"
     }
   ],
@@ -54,10 +54,9 @@
     "@flatom/core": "^0.1.0",
     "react": "^16.0.0"
   },
-  "devDpendencies": {
-    "cross-env": "^7.0.3"
-  },
   "devDependencies": {
-    "@flatom/core": "^0.1.13"
+    "@flatom/core": "^0.1.13",
+    "cross-env": "^7.0.3",
+    "size-limit": "^4.10.1"
   }
 }
