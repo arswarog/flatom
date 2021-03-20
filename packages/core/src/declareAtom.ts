@@ -18,10 +18,16 @@ interface ReducerCreator<TState> {
 }
 
 export function declareAtom<TState>(
-    key: AtomName,
+    key: AtomName | (string | number)[],
     initialState: TState,
     reducerCreator: (on: ReducerCreator<TState>) => void,
 ): Atom<TState> {
+    if (Array.isArray(key)) {
+        key = key.join('/');
+    }
+    if (typeof key === 'string' && !key.length)
+        throw new Error(`AtomName cannot be empty`);
+
     const reducers: Map<string | Atom<any>, PayloadReducer<TState, any>> = new Map();
     const relatedAtoms: Atom<any>[] = [];
     const discoveredActions: string[] = [];
@@ -82,7 +88,7 @@ export function declareAtom<TState>(
 }
 
 export function isAtom<T>(target: any): target is Atom<T> {
-    return typeof target === 'function' && typeof target.key === 'string';
+    return typeof target === 'function' && (typeof target.key === 'string' || typeof target.key === 'symbol');
 }
 
 function checkReducer(target: (state: any, action?: any) => any): void {

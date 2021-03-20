@@ -87,28 +87,24 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         // atoms
         const changedAtoms = new Set<Atom<any>>();
 
-        state = atoms.reduce(
-            (accState, atom) => {
-                const lastLocalState = accState[atom.key];
-                let localState = atom.relatedAtoms.reduce((accLocalState, relAtom) => {
-                    if (!changedAtoms.has(relAtom))
-                        return accLocalState;
+        state = {...state};
 
-                    return atom(accLocalState, {type: relAtom, payload: accState[relAtom.key]});
-                }, lastLocalState);
+        atoms.forEach(atom => {
+            const lastLocalState = state[atom.key];
+            let localState = atom.relatedAtoms.reduce((accLocalState, relAtom) => {
+                if (!changedAtoms.has(relAtom))
+                    return accLocalState;
 
-                localState = atom(localState, action);
-                if (lastLocalState === localState)
-                    return accState;
+                return atom(accLocalState, {type: relAtom, payload: state[relAtom.key]});
+            }, lastLocalState);
 
-                changedAtoms.add(atom);
-                return {
-                    ...accState,
-                    [atom.key]: localState,
-                };
-            },
-            state,
-        );
+            localState = atom(localState, action);
+            if (lastLocalState === localState)
+                return state;
+
+            changedAtoms.add(atom);
+            state[atom.key] = localState;
+        });
 
         notifyListeners(changedAtoms, action);
 

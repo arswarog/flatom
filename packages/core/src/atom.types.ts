@@ -1,7 +1,7 @@
 import { ValueProvider } from './provider.types';
 import { AnyAction } from './action.types';
 
-export type AtomName = string; // fixme: string | symbol;
+export type AtomName = string;
 
 export interface Atom<TState> extends ValueProvider<TState> {
     readonly key: AtomName;

@@ -4,14 +4,25 @@ import { ParentAtom } from './data/parent.atom';
 
 describe('Atom', () => {
     describe('properties', () => {
-        test('atomName', () => {
+        test('atomName is a string', () => {
             const atom = declareAtom('test id', {}, _ => []);
             expect(atom.key).toBe('test id');
         });
-        test('symbol as atom\'s id', () => {
-            const name = Symbol();
-            const atom = declareAtom(name, {}, _ => []);
-            expect(atom.key).toBe(name);
+        test('atomName is an array of string', () => {
+            const atom = declareAtom(['test', 'id'], {}, _ => []);
+            expect(atom.key).toBe('test/id');
+        });
+        test('atomName is an array of string and numbers', () => {
+            const atom = declareAtom(['test', 5], {}, _ => []);
+            expect(atom.key).toBe('test/5');
+        });
+        test('deny to empty atomName', () => {
+            expect(() => declareAtom('', {}, _ => []))
+                .toThrow(`AtomName cannot be empty`);
+        });
+        test('deny to empty array atomName', () => {
+            expect(() => declareAtom([], {}, _ => []))
+                .toThrow(`AtomName cannot be empty`);
         });
     });
     describe('reducer functionality', () => {
