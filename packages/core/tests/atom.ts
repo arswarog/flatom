@@ -52,7 +52,7 @@ describe('Atom', () => {
         });
         describe('on.other', () => {
             // arrange
-            const someAction = declareAction('some action');
+            const someAction = declareAction(['some action']);
 
             test('known action', () => {
                 // act

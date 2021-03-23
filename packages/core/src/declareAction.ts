@@ -1,108 +1,72 @@
-import { ValueProvider } from './provider.types';
+import {
+    ActionCreator,
+    ActionType,
+    PayloadActionCreator,
+    PrepareAction, PrepareActionWithParams,
+    Reaction, SmartActionCreator,
+} from './action.types';
+import { makeName } from './common';
 import { Store } from './store.types';
-import { ActionCreator, ActionCreatorWithParams, PayloadActionCreator } from './action.types';
 
-export function declareAction(type: string): ActionCreator<any>;
-export function declareAction<TPayload extends object>(type: string): PayloadActionCreator<TPayload>;
-export function declareAction<TPayload extends object, TParams extends object>(
-    type: string,
-    modifier: (params: TParams) => TPayload,
-): ActionCreatorWithParams<TPayload, TParams>;
-export function declareAction<TPayload extends object, TParams extends object,
-    T1 extends any>(
-    type: string,
-    providers: [
-        ValueProvider<T1>,
-    ],
-    prepare: (
-        payload: TParams,
-        ...args: [T1]
-    ) => TPayload,
-): ActionCreatorWithParams<TPayload, TParams>;
-export function declareAction<TPayload extends object, TParams extends object,
-    T1 extends any,
-    T2 extends any>(
-    type: string,
-    providers: [
-        ValueProvider<T1>,
-        ValueProvider<T2>,
-    ],
-    prepare: (
-        payload: TParams,
-        ...args: [T1, T2]
-    ) => TPayload,
-): ActionCreatorWithParams<TPayload, TParams>;
-export function declareAction<TPayload extends object, TParams extends object,
-    T1 extends any,
-    T2 extends any,
-    T3 extends any>(
-    type: string,
-    providers: [
-        ValueProvider<T1>,
-        ValueProvider<T2>,
-        ValueProvider<T3>,
-    ],
-    prepare: (
-        payload: TParams,
-        ...args: [T1, T2, T3]
-    ) => TPayload,
-): ActionCreatorWithParams<TPayload, TParams>;
-export function declareAction<TParams extends object, TPayload extends object>(
-    type: string,
-    providers?: ValueProvider<any>[] | ((payload: TParams, ...args: any[]) => TPayload),
-    modifier?: (payload: TParams, ...args: any[]) => TPayload,
-): ActionCreator<TPayload> {
-    if (Array.isArray(providers)) {
-        if (typeof modifier === 'function')
-            return makeActionCreator(
-                type,
-                makeActionCreatorWithProviders(type, modifier, providers),
-            );
-        else
-            throw new Error('If you set providers you must set modifier');
-    }
-    if (typeof providers === 'function')
-        return makeActionCreator(
-            type,
-            makeActionCreatorWithParams(type, providers),
-        );
+export function declareAction(type?: ActionType): ActionCreator;
+export function declareAction<Result>(reaction: Reaction<undefined, Result>): ActionCreator<Result>;
+export function declareAction<Result>(type: ActionType, reaction: Reaction<Result>): ActionCreator<Result>;
+export function declareAction<Payload>(type?: ActionType): PayloadActionCreator<Payload>;
+export function declareAction<Payload, Result = any>(reaction: Reaction<Payload, Result>): PayloadActionCreator<Payload, Result>;
+export function declareAction<Payload, Result = any>(type: ActionType, reaction: Reaction<Payload, Result>): PayloadActionCreator<Payload, Result>;
 
-    return makeActionCreator(
-        type,
-        (payload: TPayload) => ({
-            type,
-            payload,
-        }),
-    );
-}
+export function declareAction(
+    type?: ActionType | Reaction<any>,
+    reaction?: Reaction<any>,
+): ActionCreator | PayloadActionCreator<any> {
+    if (typeof type === 'function')
+        return declareAction('', type);
 
-function makeActionCreator<TPayload>(type: string, fn: (params?: any, store?: Store) => any): ActionCreator<TPayload> {
-    const result: any = fn;
-    result.type = type;
-    return result;
-}
+    type = makeName(type || 'action');
 
-function makeActionCreatorWithParams(type: string, modifier: (payload: any, ...args: any[]) => any) {
-    return (params: any) => ({
-        type,
-        payload: modifier(params),
-        params,
+    const actionCreator = (payload) => ({
+        type: type as string,
+        payload,
+        reaction,
     });
+    actionCreator.type = type;
+    return actionCreator;
 }
 
-function makeActionCreatorWithProviders(type: string, modifier: (payload: any, ...args: any[]) => any, providers: ValueProvider<any>[]) {
-    return (params: any, store?: Store) => {
-        if (!store)
-            throw new Error('Store is required');
+export function declareSmartAction<Payload, Params>(prepare: PrepareAction<Payload> | PrepareActionWithParams<Payload, Params>,
+                                                    reaction?: Reaction<Payload>): SmartActionCreator<Payload, Params>;
+export function declareSmartAction<Payload, Params>(type: string | (number | string)[],
+                                                    prepare: PrepareAction<Payload> | PrepareActionWithParams<Payload, Params>,
+                                                    reaction?: Reaction<Payload>): SmartActionCreator<Payload, Params>;
+export function declareSmartAction<Payload, Params>(type: string | (number | string)[] | PrepareAction<Payload> | PrepareActionWithParams<Payload, Params>,
+                                                    prepare?: PrepareAction<Payload> | PrepareActionWithParams<Payload, Params>,
+                                                    reaction?: Reaction<Payload>): SmartActionCreator<Payload, Params> {
+    if (typeof type === 'function')
+        return declareSmartAction('', type);
 
-        const values = store.resolveAll(providers);
-        const payload = modifier(params, ...values);
-        return {
-            type,
-            payload: modifier(params, ...values),
-            params,
-        };
+    type = makeName(type || 'action');
+
+    if (!prepare)
+        throw new Error(`[flatom] Prepare function is required`);
+
+    const smartActionCreator = (params: Params, store: Store) => {
+        const payload = prepare(store, params);
+        return reaction
+            ? {
+                type: type as string,
+                payload,
+                reaction,
+                params,
+            }
+            : {
+                type: type as string,
+                payload,
+                reaction,
+                params,
+            };
     };
+    smartActionCreator.type = type;
+    return smartActionCreator;
 }
 
 export function isActionCreator<T>(target: any): target is ActionCreator<T> {

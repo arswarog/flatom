@@ -6,11 +6,12 @@ export interface IParentState {
     str: string;
 }
 
-export const setParentStr = declareAction('set string', ({value}: { value: string }) => {
-    return {
+export const setParentStr = declareAction({
+    type: 'set string',
+    prepare: ({value}: { value: string }) => ({
         validationResult: value.length > 5,
         value: value + ' + 1',
-    };
+    }),
 });
 
 export const ParentAtom = declareAtom<IParentState>(

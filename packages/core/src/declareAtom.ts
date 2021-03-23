@@ -1,8 +1,6 @@
 import {
-    AnyAction,
-    ActionCreator,
+    ActionCreator, AnyAction,
     PayloadActionCreator,
-    ActionCreatorWithParams,
 } from './action.types';
 import { PayloadReducer } from './common';
 import { Store } from './store.types';
@@ -10,16 +8,17 @@ import { Atom, AtomName } from './atom.types';
 import { isActionCreator } from './declareAction';
 
 interface ReducerCreator<TState> {
-    <TPayload>(actionCreator: ActionCreator<TPayload> | PayloadActionCreator<TPayload> | ActionCreatorWithParams<TPayload, any>, reducer: PayloadReducer<TState, TPayload>): void;
+    <TPayload>(actionCreator: ActionCreator<TPayload> | PayloadActionCreator<TPayload, any>, reducer: PayloadReducer<TState, TPayload>): void;
 
     <TPayload>(atom: Atom<TPayload>, reducer: PayloadReducer<TState, TPayload>): void;
 
     other<TPayload>(reducer: (state: TState, action: AnyAction<TPayload>) => TState): void;
 }
 
+// todo unset key, unset initialState
 export function declareAtom<TState>(
     key: AtomName | (string | number)[],
-    initialState: TState,
+    initialState: TState | undefined,
     reducerCreator: (on: ReducerCreator<TState>) => void,
 ): Atom<TState> {
     if (Array.isArray(key)) {
@@ -50,7 +49,7 @@ export function declareAtom<TState>(
         } else
             throw new Error('Invalid target');
     };
-    on.other = <TPayload>(reducer: (state: TState, action: AnyAction<TPayload>) => TState) => {
+    on.other = <TPayload>(reducer: (state: TState | undefined, action: AnyAction<TPayload>) => TState) => {
         if (otherReducer)
             throw new Error('on.other already set');
 
@@ -68,14 +67,14 @@ export function declareAtom<TState>(
         if (isAtom(type)) {
             const reducer = reducers.get(type);
             return reducer
-                ? reducer(state || initialState, payload)
+                ? reducer(state || initialState!, payload)
                 : state;
         } else {
             const reducer = reducers.get(type);
             return reducer
-                ? reducer(state || initialState, payload)
+                ? reducer(state || initialState!, payload)
                 : otherReducer
-                    ? otherReducer(state || initialState, {type, payload})
+                    ? otherReducer(state || initialState!, {type, payload})
                     : state || initialState;
         }
     };

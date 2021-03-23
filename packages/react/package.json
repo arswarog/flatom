@@ -1,7 +1,7 @@
 {
   "name": "@flatom/react",
   "version": "0.1.13",
-  "description": "React binding for @factom/core",
+  "description": "React binding for @flatom/core",
   "keywords": [
     "State",
     "manager"

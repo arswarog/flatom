@@ -32,7 +32,7 @@
   "scripts": {
     "prepublishOnly": "npm run rebuild",
     "postpublish": "npm run clean",
-    "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --no-compress --external=react,@flatom/core",
+    "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --external=@flatom/core",
     "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf build/",
     "rebuild": "npm run clean && npm run build",
     "bench": "npm run rebuild && npm run bench:now && npm run clean",
@@ -46,7 +46,7 @@
   },
   "size-limit": [
     {
-      "limit": "3 KB",
+      "limit": "4 KB",
       "path": "dist/*.js"
     }
   ],

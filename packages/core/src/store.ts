@@ -1,28 +1,79 @@
-import { ReadonlyStore, Store, StoreSubscription } from './store.types';
-import { AnyAction, AnyActionCreator } from './action.types';
+import { ReadonlyStore, StateSubscription, Store, StoreSubscription } from './store.types';
+import { ActionCreator, AnyAction } from './action.types';
 import { Atom, AtomName } from './atom.types';
 import { createSubscription, Subscription, Unsubscribe } from './common';
-import { ValueProvider, ValueProviders } from './provider.types';
 import { isAtom } from './declareAtom';
+import { createResolver } from './createResolver';
 
 export function createStore(initialState: Record<AtomName, any> = {}): Store {
     let state: Record<AtomName, any> = initialState;
     let atoms: Atom<any>[] = [];
+    let somethingsHappened = false;
+    const changedAtoms = new Set<Atom<any>>();
+    /**
+     * List of immediate state change subscriptions
+     */
+    let stateSubscriptions = new Set<StateSubscription>();
+    /**
+     * List of state changes subscriptions
+     */
     let storeSubscriptions = new Set<StoreSubscription>();
+    /**
+     * List of inner atom to atom subscriptions
+     */
     let innerSubscriptions = new Map<Atom<any>, Subscription[]>();
+    /**
+     * List of targeted subscriptions
+     */
     let subscriptions = new Map<any, ((payload: any) => void)[]>();
+    /**
+     * List of GC subscriptions
+     */
     let gcSubscriptions = new Set<Unsubscribe>();
     let gc: Atom<any>[] | null = null;
+    /**
+     * @deprecated
+     */
+    let timer: any = null;
+
+    const readonlyStore: ReadonlyStore = {
+        getState,
+        subscribe,
+        resolve: null as any,
+    };
+    const resolver = createResolver(readonlyStore);
+    readonlyStore.resolve = resolver.resolve;
+
+    const debugAPI = {
+        onStateChanged,
+    };
+
+    const store: Store = {
+        subscribe,
+        dispatch,
+        getState,
+        resolve: resolver.resolve,
+        setState,
+        onGarbageCollected,
+        runService,
+        resolver,
+        debugAPI,
+    };
+
+    function onStateChanged(cb: StateSubscription): Subscription {
+        stateSubscriptions.add(cb);
+        return createSubscription(() => stateSubscriptions.delete(cb));
+    }
 
     function subscribe(cb: StoreSubscription): Subscription;
-    function subscribe(target: Atom<any> | AnyActionCreator<any>, cb: (payload?: any) => void): Subscription;
-    function subscribe(target: Atom<any> | AnyActionCreator<any> | StoreSubscription, cb?: (payload?: any) => void): Subscription {
+    function subscribe(target: Atom<any> | ActionCreator<any>, cb: (payload?: any) => void): Subscription;
+    function subscribe(target: Atom<any> | ActionCreator<any> | StoreSubscription, cb?: (payload?: any) => void): Subscription {
         if (cb === void 0) {
             storeSubscriptions.add(target as any);
             return createSubscription(() => storeSubscriptions.delete(target as any));
         }
 
-        const subscribeTarget = isAtom(target) ? target : (target as AnyActionCreator<any>).type;
+        const subscribeTarget = isAtom(target) ? target : (target as ActionCreator<any>).type;
 
         if (!subscriptions.has(subscribeTarget)) {
             subscriptions.set(subscribeTarget, []);
@@ -84,34 +135,74 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
     }
 
     function dispatch(action: AnyAction): Promise<any> {
+        // console.info(`[trace] dispatch action "${action.type}"`);
+
         // atoms
-        const changedAtoms = new Set<Atom<any>>();
+        const newState = {...state};
+        somethingsHappened = true;
 
-        state = {...state};
-
+        let isStateChanged = false;
         atoms.forEach(atom => {
-            const lastLocalState = state[atom.key];
+            const lastLocalState = newState[atom.key];
             let localState = atom.relatedAtoms.reduce((accLocalState, relAtom) => {
                 if (!changedAtoms.has(relAtom))
                     return accLocalState;
 
-                return atom(accLocalState, {type: relAtom, payload: state[relAtom.key]});
+                return atom(accLocalState, {type: relAtom, payload: newState[relAtom.key]});
             }, lastLocalState);
 
             localState = atom(localState, action);
-            if (lastLocalState === localState)
-                return state;
+            if (Object.is(lastLocalState, localState))
+                return newState;
 
             changedAtoms.add(atom);
-            state[atom.key] = localState;
+            newState[atom.key] = localState;
+            isStateChanged = true;
         });
 
-        notifyListeners(changedAtoms, action);
+        if (isStateChanged) {
+            state = newState;
+        }
 
-        return Promise.resolve();
+        stateSubscriptions.forEach(cb => cb(state, action));
+
+        notifyActionListeners(action);
+        // console.info(`[trace] run reaction for "${action.type}`);
+        const result = action.reaction && action.reaction(store, action.payload);
+
+        return Promise.resolve()
+                      .then(() => {
+                          notifyStateListeners();
+                          return result;
+                      });
     }
 
-    function notifyListeners(changedAtoms: Set<Atom<any>>, action: AnyAction) {
+    function notifyActionListeners(action: AnyAction) {
+        // console.info(`[trace] schedule to notify action "${action.type}" subscribers`);
+        const cbList = subscriptions.get(action.type);
+
+        Promise.resolve().then(() => {
+            // console.info(`[trace] notify action "${action.type}" subscribers`);
+            if (cbList)
+                Promise.all(cbList!.map(cb => cb(action.payload)));
+        });
+    }
+
+    function notifyStateListeners() {
+        // const changes: string[] = [];
+        // changedAtoms.forEach(item => changes.push(typeof item.key === 'symbol' ? '[symbol]' : String(item.key)));
+
+        if (somethingsHappened) {
+            somethingsHappened = false;
+            // console.info(`[trace] notifyStateListeners: reschedule, changes: ${changes}`);
+            return Promise.resolve().then(notifyStateListeners);
+        }
+
+        // console.info(`[trace] notifyStateListeners: run, changes: ${changes}`);
+
+        if (!changedAtoms.size) //todo
+            return;
+
         // atom subscriptions
         changedAtoms.forEach(atom => {
             const cbList = subscriptions.get(atom);
@@ -121,13 +212,11 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
             cbList.forEach(cb => cb && cb(localState));
         });
 
-        // action subscriptions
-        const cbList = subscriptions.get(action.type);
+        storeSubscriptions.forEach(cb => cb(state));
 
-        if (cbList)
-            cbList.forEach(cb => cb(action.payload));
-
-        storeSubscriptions.forEach(cb => cb(state, action));
+        changedAtoms.clear();
+        somethingsHappened = false;
+        return Promise.resolve();
     }
 
     function getState(atom?: Atom<any>, selector?: (state: any) => any): any {
@@ -143,21 +232,6 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
             : atomState;
     }
 
-    const readonlyStore: ReadonlyStore = {
-        getState,
-        subscribe,
-        resolve,
-        resolveAll,
-    };
-
-    function resolve<T extends any>(provider: ValueProvider<T>): T {
-        return provider.getValue(readonlyStore);
-    }
-
-    function resolveAll<T extends ReadonlyArray<any>>(providers: ValueProviders<T>): T {
-        return providers.map(provider => provider.getValue(readonlyStore)) as any;
-    }
-
     function setState(newState: Record<AtomName, any>, type = '@@SET_STATE'): Record<AtomName, any> {
         const prepareState: Record<AtomName, any> = {};
 
@@ -168,7 +242,8 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
             ...newState,
         };
 
-        notifyListeners(new Set<Atom<any>>(atoms), {type});
+        notifyActionListeners({type});
+        notifyStateListeners();
 
         return state;
     }
@@ -178,13 +253,9 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         return createSubscription(() => gcSubscriptions.delete(cb));
     }
 
-    return {
-        subscribe,
-        dispatch,
-        getState,
-        resolve,
-        resolveAll,
-        setState,
-        onGarbageCollected,
-    };
+    function runService(service: (store: Store) => () => void): Unsubscribe {
+        throw new Error('Not implemented');
+    }
+
+    return store;
 }

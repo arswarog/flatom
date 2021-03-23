@@ -1,28 +1,41 @@
 import { Store } from './store.types';
 
-export interface AnyAction<T = any> {
+export type ActionType = string | (string | number)[];
+
+export type PrepareAction<Payload> = (store: Store) => Payload;
+export type PrepareActionWithParams<Payload, Params> = (store: Store, params: Params) => Payload;
+export type Reaction<Payload, Result = void> = (store: Store, payload?: Payload) => Result | Promise<Result> | void;
+
+export interface AnyAction<Result = any> {
     type: string;
-    payload?: T;
+    payload?: any;
+    reaction?: Reaction<any, Result>;
 }
 
-export type ActionType = string;
-
-export type PayloadOf<T> = T extends ActionCreator<infer R> ? R : never;
-
-export interface AnyActionCreator<TPayload> {
-    readonly type: ActionType;
-
-    (payload?: TPayload): { type: string, payload: TPayload };
+export interface PayloadAction<Payload, Result = void> extends AnyAction<Result> {
+    payload: Payload;
+    reaction?: Reaction<Payload, Result>;
 }
 
-export interface ActionCreator<TPayload> extends AnyActionCreator<TPayload> {
-    (payload: TPayload): { type: string, payload: TPayload };
+export interface SmartAction<Payload, Params, Result = void> extends PayloadAction<Payload, Result> {
+    payload: Payload;
+    params: Params;
 }
 
-export interface PayloadActionCreator<TPayload> extends AnyActionCreator<TPayload> {
-    (payload: TPayload): { type: string, payload: TPayload };
+export interface ActionCreator<Result = void> {
+    readonly type: string;
+
+    (): AnyAction<Result>;
 }
 
-export interface ActionCreatorWithParams<TPayload, TParams extends object> extends PayloadActionCreator<TPayload> {
-    (params: TParams, store?: Store): { type: string, payload: TPayload };
+export interface PayloadActionCreator<Payload, Result = void> {
+    readonly type: string;
+
+    (payload: Payload): PayloadAction<Payload, Result>;
+}
+
+export interface SmartActionCreator<Payload, Params = Payload, Result = void> {
+    readonly type: string;
+
+    (payload: Params, store: Store): SmartAction<Payload, Params, Result>;
 }

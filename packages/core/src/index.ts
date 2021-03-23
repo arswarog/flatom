@@ -3,7 +3,7 @@ export * from './atom.types';
 export * from './common';
 export * from './declareAction';
 export * from './declareAtom';
-export * from './provider';
+export * from './declareProvider';
 export * from './provider.types';
 export * from './store';
 export * from './store.types';
