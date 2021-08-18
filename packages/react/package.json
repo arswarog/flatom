@@ -41,7 +41,7 @@
     "ts-check": "cross-env fixme=fixme ../../node_modules/.bin/tsc --noEmit",
     "ts-check:watch": "npm run ts-check -- --watch",
     "update": "npx npm-check-updates -u",
-    "presize": "npm run rebuild",
+    "presize": "yarn run rebuild",
     "size": "size-limit"
   },
   "size-limit": [

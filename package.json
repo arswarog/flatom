@@ -7,13 +7,21 @@
   "author": "Evgeny <arswarog@yandex.ru>",
   "license": "MIT",
   "readme": "README.md",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "postinstall": "npm run bootstrap",
     "bootstrap": "lerna bootstrap && lerna run rebuild",
     "build": "lerna run build",
     "test": "jest --collect-coverage",
     "size": "lerna run size",
-    "lint": "eslint --ext .ts,.tsx,.js,.jsx packages/"
+    "lint": "eslint --ext .ts,.tsx,.js,.jsx packages/",
+    "clean": "lerna run --parallel clean",
+    "postclean": "rm -rf packages/*/node_modules packages/*/src/*.d.ts packages/*/src/**/*.d.ts",
+    "prerebuild": "yarn run clean",
+    "rebuild": "lerna bootstrap",
+    "postrebuild": "lerna run build"
   },
   "keywords": [
     "flatom",
