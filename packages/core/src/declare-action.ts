@@ -24,7 +24,7 @@ export function declareAction(
     return actionCreator;
 }
 
-export function declareEffect<Payload, Result = unknown>(
+export function declareEffect<Payload = void, Result = unknown>(
     type: ActionType,
     reaction: Reaction<Payload, Result>,
 ): PayloadActionCreator<Payload, Result>;

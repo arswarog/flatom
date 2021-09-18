@@ -4,7 +4,11 @@ export type ActionType = string | (string | number)[];
 
 export type PrepareAction<Payload> = (store: Store) => Payload;
 export type PrepareActionWithParams<Payload, Params> = (store: Store, params: Params) => Payload;
-export type Reaction<Payload, Result = void> = (store: Store, payload?: Payload) => Result | Promise<Result> | void;
+export type Reaction<Payload = void, Result = void> = (store: Store, payload: Payload) => (Result | Promise<Result> | void);
+
+export interface Action {
+    type: string;
+}
 
 export interface AnyAction<Result = any> {
     type: string;
