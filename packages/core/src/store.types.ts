@@ -35,8 +35,6 @@ export interface Store extends ReadonlyStore {
 
     onGarbageCollected(cb: () => void): Subscription;
 
-    runService(service: (store: Store) => () => void): Unsubscribe;
-
     debugAPI: DebugAPI;
 }
 

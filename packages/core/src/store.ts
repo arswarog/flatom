@@ -55,7 +55,6 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         resolve: resolver.resolve,
         setState,
         onGarbageCollected,
-        runService,
         resolver,
         debugAPI,
     };
@@ -251,10 +250,6 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
     function onGarbageCollected(cb: () => void): Subscription {
         gcSubscriptions.add(cb);
         return createSubscription(() => gcSubscriptions.delete(cb));
-    }
-
-    function runService(service: (store: Store) => () => void): Unsubscribe {
-        throw new Error('Not implemented');
     }
 
     return store;
