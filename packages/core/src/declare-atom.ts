@@ -15,7 +15,7 @@ interface ReducerCreator<TState> {
     other<TPayload>(reducer: (state: TState, action: AnyAction<TPayload>) => TState): void;
 }
 
-// todo unset key, unset initialState
+// todo optional key, initialState
 export function declareAtom<TState, TActions = {}>(
     key: AtomName | (string | number)[],
     initialState: TState | undefined,

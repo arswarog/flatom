@@ -1,10 +1,9 @@
 import {
     Action,
     createStore,
-    declareAction,
-    resetUniqId,
+    declareAction, declareAtom,
+    resetUniqId, uniqName,
 } from '../src';
-import { cartAtom } from '../../../examples/src/shop/models/cart/cart.atom';
 
 describe('actions', () => {
     beforeEach(() => {
@@ -26,7 +25,7 @@ describe('actions', () => {
             setNum({value: '10'});
         });
         test('simple uniq action', () => {
-            const setNum = declareAction<{ value: number }>('set num');
+            const setNum = declareAction<{ value: number }>(uniqName`set num`);
 
             expect(setNum.type).toBe('set num 1');
             const action = setNum({value: 10});
@@ -36,7 +35,7 @@ describe('actions', () => {
             });
         });
         test('simple strict action', () => {
-            const setNum = declareAction<{ value: number }>(['set num']);
+            const setNum = declareAction<{ value: number }>('set num');
 
             expect(setNum.type).toBe('set num');
             const action = setNum({value: 10});
@@ -62,38 +61,43 @@ describe('actions', () => {
     });
 
     describe('builtInActions', () => {
+        const atom = declareAtom(
+            'atom',
+            {value: 0, action: ''},
+            on => [],
+            {
+                setValue(_, value: number) {
+                    return {
+                        value,
+                        action: 'setValue',
+                    };
+                },
+                clear() {
+                    return {
+                        value: 0,
+                        action: 'clear',
+                    };
+                },
+            },
+        );
+
         it('action with payload', () => {
             // @ts-expect-error
-            cartAtom.addItem();
+            atom.setValue();
             // @ts-expect-error
-            cartAtom.addItem('bad type');
-            const action: Action = cartAtom.addItem(5);
+            atom.setValue('bad type');
+            const action: Action = atom.setValue(5);
             expect(action).toEqual({
-                type: 'cart:addItem',
+                type: 'atom:setValue',
                 payload: 5,
             });
         });
-        it('action without payload', () => {
+        it('action without payload', () => { // TODO
             // // @ts-expect-error
-            // cartAtom.clear('bad type');
-            // expect(cartAtom.clear()).toEqual({
+            // atom.clear('bad type');
+            // expect(atom.clear()).toEqual({
             //     type: 'cart:clear',
             // });
-        });
-    });
-
-    describe('providers', () => {
-        test('atom', () => {
-            // arrange
-            const store = createStore();
-
-            const action = chooseProject({id: 1}, store);
-            expect(chooseProject.type).toBe('choose project');
-            expect(action.type).toBe('choose project');
-            expect(action.payload).toEqual({
-                id: 1,
-                name: 'First project',
-            });
         });
     });
 });
