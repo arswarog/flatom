@@ -2,7 +2,7 @@ import { ReadonlyStore, StateSubscription, Store, StoreSubscription } from './st
 import { ActionCreator, AnyAction } from './action.types';
 import { Atom, AtomName } from './atom.types';
 import { createSubscription, Subscription, Unsubscribe } from './common';
-import { isAtom } from './declareAtom';
+import { isAtom } from './declare-atom';
 import { createResolver } from './createResolver';
 
 export function createStore(initialState: Record<AtomName, any> = {}): Store {

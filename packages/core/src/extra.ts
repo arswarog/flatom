@@ -1,5 +1,5 @@
 import { Atom } from './atom.types';
-import { declareAtom } from './declareAtom';
+import { declareAtom } from './declare-atom';
 
 const memoStorage = Symbol('memo');
 
