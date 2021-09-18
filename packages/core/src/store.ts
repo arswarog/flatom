@@ -3,7 +3,7 @@ import { ActionCreator, AnyAction } from './action.types';
 import { Atom, AtomName } from './atom.types';
 import { createSubscription, Subscription, Unsubscribe } from './common';
 import { isAtom } from './declare-atom';
-import { createResolver } from './createResolver';
+import { createResolver } from './resolver';
 
 export function createStore(initialState: Record<AtomName, any> = {}): Store {
     let state: Record<AtomName, any> = initialState;
@@ -41,8 +41,8 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         subscribe,
         resolve: null as any,
     };
-    const resolver = createResolver(readonlyStore);
-    readonlyStore.resolve = resolver.resolve;
+    const resolver = createResolver();
+    readonlyStore.resolve = resolver.get;
 
     const debugAPI = {
         onStateChanged,
@@ -52,7 +52,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
         subscribe,
         dispatch,
         getState,
-        resolve: resolver.resolve,
+        resolve: resolver.get,
         setState,
         onGarbageCollected,
         resolver,

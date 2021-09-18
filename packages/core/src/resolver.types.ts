@@ -1,28 +1,50 @@
-import { ValueProvider, ValueProviders } from './provider.types';
-
 export interface Resolver {
-    resolve<T>(provider: ValueProvider<T>): T;
+    get<T>(token: Token<T>): T;
 
-    resolveMany<T1>(providers: [
-        ValueProvider<T1>
+    get<T>(token: Token<T>, allowFail: false): T;
+
+    get<T>(token: Token<T>, allowFail: true): T | undefined;
+
+    getMany<T1>(tokens: [
+        Token<T1>
     ]): [T1];
 
-    resolveMany<T1, T2>(providers: [
-        ValueProvider<T1>,
-        ValueProvider<T2>
+    getMany<T1, T2>(tokens: [
+        Token<T1>,
+        Token<T2>
     ]): [T1, T2];
 
-    resolveMany<T1, T2, T3>(providers: [
-        ValueProvider<T1>,
-        ValueProvider<T2>,
-        ValueProvider<T3>
+    getMany<T1, T2, T3>(tokens: [
+        Token<T1>,
+        Token<T2>,
+        Token<T3>
     ]): [T1, T2, T3];
 
-    resolveMany(providers: ValueProvider<any>[]): any[];
+    getMany(tokens: Token<unknown>[]): unknown[];
 
-    set?(provider: any, value: any): void; // todo
+    set(token: any, value: any): void; // todo
 
-    unset?(provider: any): void; // todo
+    unset(provider: any): void; // todo
 
-    reset?(): void; // todo
+    clear(): void; // todo
+}
+
+export class Token<T> {
+    constructor(public readonly name: string) {
+        this.typeHolder = name as any;
+    }
+
+    toString(): string {
+        return `Token ${this.name}`;
+    }
+
+    toJSON() {
+        return this.toString();
+    }
+
+    private typeHolder: T;
+}
+
+export function createToken<T = void>(name: string): Token<T> {
+    return new Token<T>(name);
 }

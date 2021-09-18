@@ -23,7 +23,7 @@ export interface ReadonlyStore {
 
     subscribe<T>(target: Atom<T> | ActionCreator<T>, cb: (state: T) => void): Subscription;
 
-    resolve<T>(provider: ValueProvider<T>): T;
+    resolve: Resolver['get'];
 }
 
 export interface Store extends ReadonlyStore {

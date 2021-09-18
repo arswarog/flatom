@@ -7,3 +7,5 @@ export * from './declare-provider';
 export * from './provider.types';
 export * from './store';
 export * from './store.types';
+export * from './resolver';
+export * from './resolver.types';
