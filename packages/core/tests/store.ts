@@ -1,4 +1,4 @@
-import { createStore, declareAction, declareAtom, resetUniqId, Store } from '../src';
+import { createStore, declareAction, declareAtom, declareEffect, resetUniqId, Store } from '../src';
 import { CurrentProjectAtom, incrementChildNum, setChildNum } from './data/currentProject.atom';
 import { ParentAtom } from './data/parent.atom';
 import { IProject, ProjectsAtom } from './data/projects.atom';
@@ -41,7 +41,7 @@ describe('Store', () => {
 
         const actionFooMarker = declareAction(['foo marker']);
 
-        const actionFoo = declareAction(['foo'], async ({dispatch}) => {
+        const actionFoo = declareEffect(['foo'], async ({dispatch}) => {
             events.push('reaction foo');
             await wait();
             return dispatch(actionFooMarker());
@@ -99,7 +99,7 @@ describe('Store', () => {
 
                 const atomImmediate = declareAtom(['immediate'], 0, on => on(actionImmediate, state => state + 1));
 
-                const actionBar = declareAction(['bar'], ({dispatch}) => {
+                const actionBar = declareEffect(['bar'], ({dispatch}) => {
                     events.push('reaction bar');
                     dispatch(actionFoo());
                     events.push('after sync dispatch foo');
@@ -152,7 +152,7 @@ describe('Store', () => {
         test('sync dispatch in reaction', () => {
             return new Promise<void>((resolve) => {
                 // arrange
-                const actionBar = declareAction(['bar'], ({dispatch}) => {
+                const actionBar = declareEffect(['bar'], ({dispatch}) => {
                     events.push('reaction bar');
                     dispatch(actionFoo());
                     events.push('after sync dispatch foo');

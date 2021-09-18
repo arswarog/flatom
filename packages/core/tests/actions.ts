@@ -1,6 +1,10 @@
-import { createStore, declareAction, declareAtom, declareSmartAction, resetUniqId, Store } from '../src';
-import { chooseProject } from './data/currentProject.atom';
-import { Random } from './data/providers';
+import {
+    Action,
+    createStore,
+    declareAction,
+    resetUniqId,
+} from '../src';
+import { cartAtom } from '../../../examples/src/shop/models/cart/cart.atom';
 
 describe('actions', () => {
     beforeEach(() => {
@@ -57,57 +61,24 @@ describe('actions', () => {
         });
     });
 
-    describe('declareSmartAction', () => {
-        const store: Store = null as any;
-        test('action without type', () => {
-            const setNum = declareSmartAction((_, value: number) => ({value}));
-
-            expect(setNum.type).toBe('action 1');
-            const action = setNum(10, store);
-            expect(action.type).toBe('action 1');
-            expect(action.payload).toEqual({
-                value: 10,
-            });
-
-            // type asserts
+    describe('builtInActions', () => {
+        it('action with payload', () => {
             // @ts-expect-error
-            setNum({value: '10'});
-        });
-        test('simple uniq action', () => {
-            const setNum = declareSmartAction('set num', (_, value: number) => ({value}));
-
-            expect(setNum.type).toBe('set num 1');
-            const action = setNum(10, store);
-            expect(action.type).toBe('set num 1');
-            expect(action.payload).toEqual({
-                value: 10,
+            cartAtom.addItem();
+            // @ts-expect-error
+            cartAtom.addItem('bad type');
+            const action: Action = cartAtom.addItem(5);
+            expect(action).toEqual({
+                type: 'cart:addItem',
+                payload: 5,
             });
         });
-        test('simple strict action', () => {
-            const setNum = declareSmartAction<{ value: number }, number>(['set num'], (_, value) => ({value}));
-
-            expect(setNum.type).toBe('set num');
-            const action = setNum(10, store);
-            expect(action.type).toBe('set num');
-            expect(action.payload).toEqual({
-                value: 10,
-            });
-
-            // @ts-expect-error
-            setNum('bad');
-        });
-        test('simple strict action with number in type', () => {
-            const setNum = declareSmartAction<{ value: number }, number>(['set num', 5], (_, value) => ({value}));
-
-            expect(setNum.type).toBe('set num/5');
-            const action = setNum(10, store);
-            expect(action.type).toBe('set num/5');
-            expect(action.payload).toEqual({
-                value: 10,
-            });
-
-            // @ts-expect-error
-            setNum(true);
+        it('action without payload', () => {
+            // // @ts-expect-error
+            // cartAtom.clear('bad type');
+            // expect(cartAtom.clear()).toEqual({
+            //     type: 'cart:clear',
+            // });
         });
     });
 

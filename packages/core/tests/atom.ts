@@ -1,6 +1,7 @@
 import { CurrentProjectAtom, setChildNum } from './data/currentProject.atom';
 import { declareAction, declareAtom } from '../src';
 import { ParentAtom } from './data/parent.atom';
+import { cartAtom } from '../../../examples/src/shop/models/cart/cart.atom';
 
 describe('Atom', () => {
     describe('properties', () => {
@@ -39,6 +40,18 @@ describe('Atom', () => {
 
             expect(state).toEqual({
                 num: 10,
+            });
+        });
+        test('built in action', () => {
+            const state = cartAtom(undefined, cartAtom.addItem(10));
+
+            expect(state).toEqual({
+                items: [
+                    {
+                        productId: 10,
+                        count: 1,
+                    },
+                ],
             });
         });
         test('unknown action and state by default', () => {
