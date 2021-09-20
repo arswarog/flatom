@@ -1,7 +1,5 @@
-import { CurrentProjectAtom, setChildNum } from './data/currentProject.atom';
-import { declareAction, declareAtom } from '../src';
-import { ParentAtom } from './data/parent.atom';
-import { cartAtom } from '../../../examples/src/shop/models/cart/cart.atom';
+import { declareAtom } from '../src/declare-atom';
+import { declareAction } from '../src/declare-action';
 
 describe('Atom', () => {
     describe('properties', () => {
@@ -27,75 +25,77 @@ describe('Atom', () => {
         });
     });
     describe('reducer functionality', () => {
+        const setValue = declareAction<{ value: number }>('setValue');
+        const atom = declareAtom('atom', {
+            value: 0,
+            action: '',
+        }, on => [
+            on(setValue, (state, payload) => ({
+                action: 'setValue',
+                value: payload.value,
+            })),
+        ], {
+            setText: (state, text: string) => {
+                return {
+                    value: +text,
+                    action: 'setText',
+                };
+            },
+        });
+        const relatedAtom = declareAtom('relatedAtom', {
+            value: '',
+            action: '',
+        }, on => [
+            on(atom, (state, {value}) => ({
+                action: 'atom',
+                value: value.toString(),
+            })),
+            on.other((state, action) => ({
+                value: state.value,
+                action: action.type,
+            })),
+        ]);
+
         test('atom', () => {
-            const state = ParentAtom(undefined, {type: CurrentProjectAtom, payload: {num: 10}} as any);
+            const state = relatedAtom(undefined, {type: atom, payload: {value: 10, action: ''}} as any);
 
             expect(state).toEqual({
-                childNum: 10,
-                str: 'test',
+                value: '10',
+                action: 'atom',
             });
         });
         test('action', () => {
-            const state = CurrentProjectAtom(undefined, setChildNum({value: 10}));
+            const state = atom(undefined, setValue({value: 10}));
 
             expect(state).toEqual({
-                num: 10,
+                value: 10,
+                action: 'setValue',
             });
         });
         test('built in action', () => {
-            const state = cartAtom(undefined, cartAtom.addItem(10));
+            const state = atom(undefined, atom.setText('20'));
 
             expect(state).toEqual({
-                items: [
-                    {
-                        productId: 10,
-                        count: 1,
-                    },
-                ],
+                value: 20,
+                action: 'setText',
             });
         });
         test('unknown action and state by default', () => {
             // act
-            const state = ParentAtom(undefined, setChildNum({value: 10}));
+            const state = atom(undefined, {type: 'unknown action'});
 
             expect(state).toEqual({
-                childNum: 0,
-                str: 'test',
-            });
-        });
-        describe('on.other', () => {
-            // arrange
-            const someAction = declareAction(['some action']);
-
-            test('known action', () => {
-                // act
-                const state = CurrentProjectAtom(undefined, setChildNum({value: 10}));
-
-                // assert
-                expect(state).toEqual({
-                    num: 10,
-                });
-            });
-            test('other action', () => {
-                // arrange
-
-                // act
-                const state = CurrentProjectAtom(undefined, someAction());
-
-                // assert
-                expect(state).toEqual({
-                    num: 0,
-                    type: 'some action',
-                    payload: undefined,
-                });
+                value: 0,
+                action: '',
             });
         });
         test('invalid action', () => {
             // assert
-            const state = CurrentProjectAtom(undefined, {} as any);
+            const state = atom(undefined, {} as any);
 
             expect(state).toEqual({
-                num: 0,
+                value: 0,
+                action: '',
             });
         });
         test('discard duplicate target atoms', () => {
@@ -103,20 +103,20 @@ describe('Atom', () => {
                 'test',
                 null,
                 on => [
-                    on(ParentAtom, state => state),
-                    on(ParentAtom, state => state),
+                    on(atom, state => state),
+                    on(atom, state => state),
                 ],
-            )).toThrow('Reaction for atom "parent" already set');
+            )).toThrow('Reaction for atom "atom" already set');
         });
         test('discard duplicate target actions', () => {
             expect(() => declareAtom(
                 'test',
                 null,
                 on => [
-                    on(setChildNum, state => state),
-                    on(setChildNum, state => state),
+                    on(setValue, state => state),
+                    on(setValue, state => state),
                 ],
-            )).toThrow('Reaction for action "set child num" already set');
+            )).toThrow('Reaction for action "setValue" already set');
         });
         test('discard invalid target', () => {
             expect(() => declareAtom(
@@ -132,9 +132,9 @@ describe('Atom', () => {
                 'test',
                 null,
                 on => [
-                    on(setChildNum, null as any),
+                    on(setValue, null as any),
                 ],
-            )).toThrow('Invalid reducer');
+            )).toThrow('Invalid reducer for target "setValue"');
         });
         test('discard duplicate register other', () => {
             expect(() => declareAtom(
@@ -145,6 +145,23 @@ describe('Atom', () => {
                     on.other(state => state),
                 ],
             )).toThrow('on.other already set');
+        });
+        describe('on.other', () => {
+            // arrange
+            const someAction = declareAction('some action');
+
+            test('other action', () => {
+                // arrange
+
+                // act
+                const state = relatedAtom(undefined, someAction());
+
+                // assert
+                expect(state).toEqual({
+                    value: "",
+                    action: 'some action',
+                });
+            });
         });
     });
 });

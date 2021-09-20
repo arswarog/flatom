@@ -35,17 +35,17 @@ export function declareAtom<TState, TActions = {}>(
     let otherReducer: PayloadReducer<TState, any> | undefined;
 
     const on: any = <T>(target: Atom<any> | ActionCreator<any>, reducer: PayloadReducer<TState, T>) => {
-        checkReducer(reducer);
-
         if (isAtom(target)) {
             if (reducers.has(target))
                 throw new Error(`Reaction for atom "${target.key}" already set`);
             relatedAtoms.push(target);
+            checkReducer(reducer, target.key);
             reducers.set(target, reducer);
         } else if (isActionCreator(target)) {
             if (reducers.has(target.type))
                 throw new Error(`Reaction for action "${target.type}" already set`);
             discoveredActions.push(target.type);
+            checkReducer(reducer, target.type);
             reducers.set(target.type, reducer);
         } else
             throw new Error('Invalid target');
@@ -110,7 +110,11 @@ export function isAtom<T>(target: any): target is Atom<T> {
     return typeof target === 'function' && (typeof target.key === 'string' || typeof target.key === 'symbol');
 }
 
-function checkReducer(target: (state: any, action?: any) => any): void {
-    if (typeof target !== 'function')
+function checkReducer(target: (state: any, action?: any) => any, key?: string): void {
+    if (typeof target === 'function')
+        return;
+    if (key)
+        throw new Error(`Invalid reducer for target "${key}"`);
+    else
         throw new Error(`Invalid reducer`);
 }
