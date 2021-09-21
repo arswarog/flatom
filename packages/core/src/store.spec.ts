@@ -1,38 +1,66 @@
-import { createStore, declareAction, declareAtom, declareEffect, resetUniqId, Store } from '../src';
-import { CurrentProjectAtom, incrementChildNum, setChildNum } from './data/currentProject.atom';
-import { ParentAtom } from './data/parent.atom';
-import { IProject, ProjectsAtom } from './data/projects.atom';
+import { createStore, declareAction, declareAtom, declareEffect, resetUniqId, Store } from './index';
 
 describe('Store', () => {
-    beforeEach(() => resetUniqId());
+    const setValue = declareAction<{ value: number }>('setValue');
+    const atom = declareAtom('atom', {
+        value: 0,
+        action: '',
+    }, on => [
+        on(setValue, (state, payload) => ({
+            action: 'setValue',
+            value: payload.value,
+        })),
+    ], {
+        setText: (state, text: string) => {
+            return {
+                value: +text,
+                action: 'setText',
+            };
+        },
+    });
+    const relatedAtom = declareAtom('relatedAtom', {
+        value: '',
+        action: '',
+    }, on => [
+        on(atom, (state, {value}) => ({
+            action: 'atom',
+            value: value.toString(),
+        })),
+    ], {
+        setDirectText: (state, text: string) => {
+            return {
+                value: text,
+                action: 'setDirectText',
+            };
+        },
+    });
+
     describe('getState', () => {
         const store = createStore();
-        store.subscribe(ParentAtom, () => null);
+        store.subscribe(atom, () => null);
 
         test('get not subscribed atom state', () => {
-            expect(store.getState(CurrentProjectAtom)).toEqual({
-                num: 0,
+            expect(store.getState(relatedAtom)).toEqual({
+                value: '',
+                action: '',
             });
         });
         test('get all state', () => {
             expect(store.getState()).toEqual({
-                child: {
-                    num: 0,
-                },
-                parent: {
-                    childNum: 0,
-                    str: 'test',
+                atom: {
+                    value: 0,
+                    action: '',
                 },
             });
         });
         test('get atom state', () => {
-            expect(store.getState(ParentAtom)).toEqual({
-                childNum: 0,
-                str: 'test',
+            expect(store.getState(atom)).toEqual({
+                value: 0,
+                action: '',
             });
         });
         test('get atom state with selector', () => {
-            expect(store.getState(ParentAtom, ({childNum}) => childNum)).toEqual(0);
+            expect(store.getState(atom, ({value}) => value)).toEqual(0);
         });
     });
     describe('sequence', () => {
@@ -203,120 +231,132 @@ describe('Store', () => {
         describe('error in subscribers', () => {});
     });
     describe('atoms', () => {
-        test('simple atom', () => {
+        test('single atom', () => {
             // arrange
             const store = createStore();
-            store.subscribe(CurrentProjectAtom, () => null);
-            expect(store.getState(CurrentProjectAtom)).toEqual({
-                num: 0,
+            store.subscribe(atom, () => null);
+            expect(store.getState(atom)).toEqual({
+                value: 0,
+                action: '',
             });
 
             // act
-            store.dispatch(setChildNum({value: 5}));
+            store.dispatch(atom.setText('5'));
 
             // assert
-            expect(store.getState(CurrentProjectAtom)).toEqual({
-                num: 5,
+            expect(store.getState(atom)).toEqual({
+                value: 5,
+                action: 'setText',
             });
             expect(store.getState()).toEqual({
-                child: {
-                    num: 5,
+                atom: {
+                    value: 5,
+                    action: 'setText',
                 },
             });
         });
-        test('related atom', () => {
+        test('related atom changes when dep atom was changed', () => {
             // arrange
             const store = createStore();
-            store.subscribe(ParentAtom, () => null);
+            store.subscribe(relatedAtom, () => null);
 
             // act
-            store.dispatch(setChildNum({value: 5}));
+            store.dispatch(atom.setText('55'));
 
             // assert
             expect(store.getState()).toEqual({
-                parent: {
-                    childNum: 5,
-                    str: 'test',
+                atom: {
+                    value: 55,
+                    action: 'setText',
                 },
-                child: {
-                    num: 5,
+                relatedAtom: {
+                    value: '55',
+                    action: 'atom',
                 },
             });
-            expect(store.getState(ParentAtom)).toEqual({
-                childNum: 5,
-                str: 'test',
+            expect(store.getState(atom)).toEqual({
+                value: 55,
+                action: 'setText',
             });
-            expect(store.getState(CurrentProjectAtom)).toEqual({
-                num: 5,
+            expect(store.getState(relatedAtom)).toEqual({
+                value: '55',
+                action: 'atom',
             });
         });
-        test('delete unsubscribed atom', () => {
+        test('delete atom\'s data after unsubscribe', () => {
             // arrange
             const store = createStore();
-            const subscription = store.subscribe(ParentAtom, () => null);
+            const subscription = store.subscribe(relatedAtom, () => null);
 
-            store.dispatch(setChildNum({value: 5}));
-            expect(store.getState(ParentAtom)).toEqual({
-                childNum: 5,
-                str: 'test',
+            store.dispatch(atom.setText('12'));
+            expect(store.getState(atom)).toEqual({
+                value: 12,
+                action: 'setText',
+            });
+            expect(store.getState(relatedAtom)).toEqual({
+                value: '12',
+                action: 'atom',
             });
 
             // act
             subscription.unsubscribe();
 
             // assert
-            expect(store.getState(ParentAtom)).toEqual({
-                childNum: 0,
-                str: 'test',
+            expect(store.getState(relatedAtom)).toEqual({
+                value: '',
+                action: '',
             });
-            expect(store.getState(CurrentProjectAtom)).toEqual({
-                num: 0,
+            expect(store.getState(atom)).toEqual({
+                value: 0,
+                action: '',
             });
             expect(store.getState()).toEqual({});
         });
-        test('apply related atoms while init new atom', () => {
+        test('calculate state of new atoms then they init from their deps', () => {
             // arrange
             const store = createStore();
-            store.subscribe(CurrentProjectAtom, () => null);
+            store.subscribe(atom, () => null);
 
-            store.dispatch(setChildNum({value: 5}));
-            expect(store.getState(CurrentProjectAtom)).toEqual({
-                num: 5,
+            store.dispatch(atom.setText('10'));
+            expect(store.getState(atom)).toEqual({
+                value: 10,
+                action: 'setText',
             });
 
             // act
-            store.subscribe(ParentAtom, () => null);
-            expect(store.getState(ParentAtom)).toEqual({
-                childNum: 5,
-                str: 'test',
+            store.subscribe(relatedAtom, () => null);
+            expect(store.getState(relatedAtom)).toEqual({
+                value: '10',
+                action: 'atom',
             });
         });
-        test('not delete unsubscribed atom, if exist another parent', () => {
+        test('don not delete atom, if another atom subscribe for it', () => {
             // arrange
             let gcEvents = 0;
-            const AnotherParentAtom = declareAtom<{ childNum: number }>(
-                'anotherParent',
-                {childNum: 0},
-                on => on(CurrentProjectAtom, (_, {num}) => ({
-                    childNum: num,
+            const anotherRelatedAtom = declareAtom<{ value: number }>(
+                'anotherRelatedAtom',
+                {value: 0},
+                on => on(atom, (_, {value}) => ({
+                    value,
                 })),
             );
             const store = createStore();
             store.onGarbageCollected(() => gcEvents++);
-            const subscription = store.subscribe(ParentAtom, () => null);
-            const subscription2 = store.subscribe(AnotherParentAtom, () => null);
+            const subscription = store.subscribe(relatedAtom, () => null);
+            const subscription2 = store.subscribe(anotherRelatedAtom, () => null);
 
-            store.dispatch(setChildNum({value: 5}));
+            store.dispatch(atom.setText('5'));
             expect(store.getState()).toEqual({
-                child: {
-                    num: 5,
+                atom: {
+                    value: 5,
+                    action: 'setText',
                 },
-                parent: {
-                    childNum: 5,
-                    str: 'test',
+                relatedAtom: {
+                    value: '5',
+                    action: 'atom',
                 },
-                anotherParent: {
-                    childNum: 5,
+                anotherRelatedAtom: {
+                    value: 5,
                 },
             });
 
@@ -325,11 +365,12 @@ describe('Store', () => {
 
             // assert
             expect(store.getState()).toEqual({
-                child: {
-                    num: 5,
+                atom: {
+                    value: 5,
+                    action: 'setText',
                 },
-                anotherParent: {
-                    childNum: 5,
+                anotherRelatedAtom: {
+                    value: 5,
                 },
             });
             expect(gcEvents).toBe(1);
@@ -339,15 +380,16 @@ describe('Store', () => {
             subscription2.unsubscribe();
 
             // assert
-            expect(store.getState(ParentAtom)).toEqual({
-                childNum: 0,
-                str: 'test',
+            expect(store.getState(relatedAtom)).toEqual({
+                value: '',
+                action: '',
             });
-            expect(store.getState(CurrentProjectAtom)).toEqual({
-                num: 0,
+            expect(store.getState(atom)).toEqual({
+                value: 0,
+                action: '',
             });
             expect(store.getState()).toEqual({});
-            // expect(gcEvents).toBe(1); fixme
+            expect(gcEvents).toBe(1);
         });
         test('subscribe for atoms', async () => {
             // arrange
@@ -355,27 +397,11 @@ describe('Store', () => {
             let value: any;
 
             // act
-            store.subscribe(CurrentProjectAtom, (state) => value = state);
-            await store.dispatch(setChildNum({value: 10}));
+            store.subscribe(atom, (state) => value = state);
+            await store.dispatch(atom.setText('10'));
 
             // assert
-            expect(value).toEqual({num: 10});
-        });
-        test('subscribe twice for same atom', () => {
-            // arrange
-            const store = createStore();
-
-            // act
-            const sub1 = store.subscribe(CurrentProjectAtom, () => null);
-            store.dispatch(incrementChildNum());
-            expect(store.getState(CurrentProjectAtom)).toEqual({num: 1});
-            sub1.unsubscribe();
-
-            store.subscribe(CurrentProjectAtom, () => null);
-            store.dispatch(incrementChildNum());
-
-            // assert
-            expect(store.getState(CurrentProjectAtom)).toEqual({num: 1});
+            expect(value).toEqual({value: 10, action: 'setText'});
         });
 
         // todo: атом не удаляется если есть зависимые атомы
@@ -387,8 +413,8 @@ describe('Store', () => {
             let value: any;
 
             // act
-            store.subscribe(setChildNum, payload => value = payload);
-            await store.dispatch(setChildNum({value: 10}));
+            store.subscribe(setValue, payload => value = payload);
+            await store.dispatch(setValue({value: 10}));
 
             // assert
             expect(value).toEqual({value: 10});
@@ -397,61 +423,28 @@ describe('Store', () => {
             // arrange
             const store = createStore();
             let value: any;
-            const subscription = store.subscribe(setChildNum, (payload) => value = payload);
-            await store.dispatch(setChildNum({value: 10}));
+            const subscription = store.subscribe(setValue, (payload) => value = payload);
+            await store.dispatch(setValue({value: 10}));
 
             // act
             subscription.unsubscribe();
 
             // assert
-            await store.dispatch(setChildNum({value: 10}));
+            await store.dispatch(setValue({value: 10}));
             expect(value).toEqual({value: 10});
         });
         test('error in atom', () => {
-            const atom = declareAtom('some', {}, on => on(setChildNum, () => {
+            const atom = declareAtom('some', {}, on => on(setValue, () => {
                 throw new Error('Some error');
             }));
 
             const store = createStore();
             store.subscribe(atom, () => null);
 
-            expect(() => store.dispatch(setChildNum({value: 5}))).toThrow(`Some error`);
-        });
-    });
-    describe('resolve', () => {
-        test('more then one providers', () => {
-            // arrange
-            const store = createStore();
-
-            // act
-            const currentProject = store.resolver.resolve(CurrentProjectAtom);
-
-            // assert
-            expect(currentProject).toEqual({
-                num: 0,
-            });
-        });
-        test('more then one providers', () => {
-            // arrange
-            const store = createStore();
-
-            // act
-            const [currentProject, projects] = store.resolver.resolveMany([CurrentProjectAtom, ProjectsAtom]);
-
-            // assert
-            expect(currentProject).toEqual({
-                num: 0,
-            });
-            expect(projects).toEqual({
-                list: new Map<number, IProject>([
-                    [1, {id: 1, name: 'First project'}],
-                    [2, {id: 2, name: 'Second project'}],
-                ]),
-            });
+            expect(() => store.dispatch(setValue({value: 5}))).toThrow(`Some error`);
         });
     });
 });
-
 
 // TODO check atoms without initialState
 // TODO subscribe for action by string type
