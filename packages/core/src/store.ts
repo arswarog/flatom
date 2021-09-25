@@ -10,7 +10,6 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
 
     let state: Record<AtomName, any> = initialState;
     let atoms: Atom<any>[] = [];
-    let somethingsHappened = false;
     const changedAtoms = new Set<Atom<any>>();
     /**
      * List of immediate state change subscriptions
@@ -136,7 +135,6 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
 
         // atoms
         const newState = {...state};
-        somethingsHappened = true;
 
         let isStateChanged = false;
         atoms.forEach(atom => {
@@ -163,42 +161,34 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
 
         immediateSubscriptions.forEach(cb => cb(state, action));
 
-        notifyActionListeners(action);
         trace(`run reaction for "${action.type}"`);
         const result = action.reaction && action.reaction(store, action.payload);
 
-        return Promise.resolve()
-                      .then(() => {
-                          notifyStateListeners();
-                          return result;
-                      });
+        notifyStoreListeners(action);
+        notifyAtomListeners();
+        notifyActionListeners(action);
+
+        return Promise.resolve(result);
+    }
+
+    function notifyStoreListeners(action: AnyAction) {
+        dispatchSubscriptions.forEach(cb => cb(action));
     }
 
     function notifyActionListeners(action: AnyAction) {
-        trace(`schedule to notify action "${action.type}" subscribers`);
         const cbList = subscriptions.get(action.type);
 
-        dispatchSubscriptions.forEach(cb => cb(action));
-
-        Promise.resolve().then(() => {
-            // console.info(`[trace] notify action "${action.type}" subscribers`);
-            if (cbList)
-                Promise.all(cbList!.map(cb => cb(action.payload)));
-        });
+        trace(`notify action "${action.type}" subscribers`);
+        if (cbList)
+            Promise.all(cbList!.map(cb => cb(action.payload)));
     }
 
-    function notifyStateListeners() {
+    function notifyAtomListeners() {
         const changes: string[] = [];
         if (config.trace)
             changedAtoms.forEach(item => changes.push(typeof item.key === 'symbol' ? '[symbol]' : String(item.key)));
 
-        if (somethingsHappened) {
-            somethingsHappened = false;
-            trace(`notifyStateListeners: reschedule, changes: ${changes}`);
-            return Promise.resolve().then(notifyStateListeners);
-        }
-
-        trace(`notifyStateListeners: run, changes: ${changes}`);
+        trace(`notifyAtomListeners: run, changes: ${changes}`);
 
         if (!changedAtoms.size) //todo
             return;
@@ -208,12 +198,11 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
             const cbList = subscriptions.get(atom);
             if (!cbList) return;
 
-            const localState = state[atom.key];
-            cbList.forEach(cb => cb && cb(localState));
+            const atomState = state[atom.key];
+            cbList.forEach(cb => cb && cb(atomState));
         });
 
         changedAtoms.clear();
-        somethingsHappened = false;
         return Promise.resolve();
     }
 
@@ -241,7 +230,7 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
         };
 
         notifyActionListeners({type});
-        notifyStateListeners();
+        notifyAtomListeners();
 
         return state;
     }

@@ -1,4 +1,5 @@
-import { createStore, declareAction, declareAtom, declareEffect, resetUniqId, Store } from './index';
+import { AnyAction, createStore, declareAction, declareAtom, declareEffect, resetUniqId, Store } from './index';
+import { delay, wait } from './utils';
 
 describe('Store', () => {
     const setValue = declareAction<{ value: number }>('setValue');
@@ -49,7 +50,6 @@ describe('Store', () => {
 
                 const actions: AnyAction[] = [];
                 store.subscribe((action) => actions.push(action));
-                store.subscribe((action) => console.log(action));
 
                 await store.dispatch(setValue({value: 5}));
 
@@ -62,6 +62,12 @@ describe('Store', () => {
                     },
                 ]);
             });
+        });
+        describe('for atom', () => {
+
+        });
+        describe('for action', () => {
+
         });
     });
 
@@ -139,32 +145,27 @@ describe('Store', () => {
         const actionFooMarker = declareAction(['foo marker']);
 
         const actionFoo = declareEffect(['foo'], async ({dispatch}) => {
-            events.push('reaction foo');
+            events.push('reaction for "foo"');
             await wait();
             return dispatch(actionFooMarker());
         });
 
         const atomFoo = declareAtom('atomFoo', 0, on => on(actionFoo, (state) => {
-            events.push('reducer foo');
+            events.push('reducer for "foo"');
             return state + 1;
         }));
 
         beforeEach(() => {
             events = [];
 
-            store = createStore({}, {trace: true});
+            store = createStore({}, {trace: false});
 
             store.debugAPI.onStateChanged((_, action) => events.push('state changed by action "' + action.type + '"'));
-            store.subscribe(() => events.push('subscription state'));
-            store.subscribe(atomFoo, () => events.push('subscription atom foo'));
-            store.subscribe(actionFoo, () => {
-                events.push('subscription action foo');
-            });
-            store.subscribe(actionFooMarker, () => events.push('subscription action foo marker'));
+            store.subscribe(action => events.push(`dispatch subscription: action "${action.type}"`));
+            store.subscribe(atomFoo, () => events.push('atom subscription: "foo"'));
+            store.subscribe(actionFoo, () => events.push('action subscription: "foo"'));
+            store.subscribe(actionFooMarker, () => events.push('action subscription: "foo marker"'));
         });
-
-        const delay = (timeout = 0) => new Promise(resolve => setTimeout(resolve, timeout));
-        const wait = () => new Promise(resolve => setTimeout(resolve));
 
         test('single dispatch', () => {
             return new Promise<void>((resolve) => {
@@ -173,23 +174,24 @@ describe('Store', () => {
                      .then(() => {
                          // assert
                          expect(events).toEqual([
-                             'reducer foo',
+                             'reducer for "foo"',
                              'state changed by action "foo"',
-                             'reaction foo',
-                             'after sync dispatch foo',
-                             'subscription action foo',
-                             'subscription atom foo',
-                             'subscription state',
+                             'reaction for "foo"',
+                             'dispatch subscription: action "foo"',
+                             'atom subscription: "foo"',
+                             'action subscription: "foo"',
+                             'after sync dispatch "foo"',
                              'state changed by action "foo marker"',
-                             'subscription action foo marker',
+                             'dispatch subscription: action "foo marker"',
+                             'action subscription: "foo marker"',
                          ]);
                          resolve();
                      });
 
-                events.push('after sync dispatch foo');
+                events.push('after sync dispatch "foo"');
             });
         });
-        test('dispatch in action subscription', () => {
+        test('dispatch "foo" in effect "bar"', () => {
             return new Promise<void>((resolve) => {
                 // arrange
                 const actionImmediate = declareAction(['immediate']);
@@ -197,102 +199,111 @@ describe('Store', () => {
                 const atomImmediate = declareAtom(['immediate'], 0, on => on(actionImmediate, state => state + 1));
 
                 const actionBar = declareEffect(['bar'], ({dispatch}) => {
-                    events.push('reaction bar');
+                    events.push('reaction for "bar"');
                     dispatch(actionFoo());
-                    events.push('after sync dispatch foo');
+                    events.push('after sync dispatch "foo"');
                 });
 
                 const atomBar = declareAtom('bar', 0, on => on(actionBar, state => {
-                    events.push('reducer bar');
+                    events.push('reducer for "bar"');
                     return state + 1;
                 }));
 
                 store.subscribe(actionFoo, () => store.dispatch(actionImmediate()));
-                store.subscribe(actionBar, () => events.push('subscription action bar'));
-                store.subscribe(atomBar, () => events.push('subscription atom bar'));
-                store.subscribe(atomImmediate, () => events.push('subscription atom immediate'));
-
-                const interval = setInterval(() => events.push('setTimeout'));
-
+                store.subscribe(actionBar, () => events.push('action subscription: "bar"'));
+                store.subscribe(atomBar, () => events.push('atom subscription: "bar"'));
+                store.subscribe(atomImmediate, () => events.push('atom subscription: "immediate"'));
                 // act
+
+                Promise.resolve().then(() => events.push('--microtask--'));
+                setTimeout(() => events.push('--macrotask--'));
+
                 store.dispatch(actionBar())
                      .then(() => delay(1))
+                     .then(() => delay())
                      .then(() => {
                          // assert
                          expect(events).toEqual([
-                             'reducer bar',
-                             'state changed by action "bar"',
-                             'reaction bar',
-                             'reducer foo',
-                             'state changed by action "foo"',
-                             'reaction foo',
-                             'after sync dispatch foo',
-                             'after sync dispatch bar',
-                             'subscription action bar',
-                             'subscription action foo',
-                             'state changed by action "immediate"',
-                             'subscription atom bar',
-                             'subscription atom foo',
-                             'subscription atom immediate',
-                             'subscription state',
-                             'setTimeout',
-                             'state changed by action "foo marker"',
-                             'subscription action foo marker',
+                             /* + . . */ 'reducer for "bar"',
+                             /* | . . */ 'state changed by action "bar"',
+                             /* | . . */ 'reaction for "bar"',
+                             /* . + . */ 'reducer for "foo"',
+                             /* . | . */ 'state changed by action "foo"',
+                             /* . | . */ 'reaction for "foo"',
+                             /* . | . */ 'dispatch subscription: action "foo"',
+                             /* . | . */ 'atom subscription: "bar"',
+                             /* . | . */ 'atom subscription: "foo"',
+                             /* . | + */ 'action subscription: "foo"',
+                             /* . . | */ 'state changed by action "immediate"',
+                             /* . . | */ 'dispatch subscription: action "immediate"',
+                             /* . . | */ 'atom subscription: "immediate"',
+                             /* . | . */ 'after sync dispatch "foo"',
+                             /* | . . */ 'dispatch subscription: action "bar"',
+                             /* | . . */ 'action subscription: "bar"',
+                             /* | . . */ 'after sync dispatch "bar"',
+                             /* . . . */ '--microtask--',
+                             /* . . | */ 'state changed by action "foo marker"',
+                             /* . . | */ 'dispatch subscription: action "foo marker"',
+                             /* . . | */ 'action subscription: "foo marker"',
+                             /* . . . */ '--macrotask--',
                          ]);
-                         clearInterval(interval);
                          resolve();
                      });
 
-                events.push('after sync dispatch bar');
+                events.push('after sync dispatch "bar"');
             });
         });
         test('sync dispatch in reaction', () => {
             return new Promise<void>((resolve) => {
                 // arrange
                 const actionBar = declareEffect(['bar'], ({dispatch}) => {
-                    events.push('reaction bar');
+                    events.push('reaction for "bar"');
                     dispatch(actionFoo());
-                    events.push('after sync dispatch foo');
+                    events.push('after sync dispatch "foo"');
                 });
 
                 const atomBar = declareAtom('bar', 0, on => on(actionBar, state => {
-                    events.push('reducer bar');
+                    events.push('reducer for "bar"');
                     return state + 1;
                 }));
 
-                store.subscribe(actionBar, () => events.push('subscription action bar'));
-                store.subscribe(atomBar, () => events.push('subscription atom bar'));
+                store.subscribe(actionBar, () => events.push('action subscription: "bar"'));
+                store.subscribe(atomBar, () => events.push('atom subscription: "bar"'));
 
                 // act
-                const interval = setInterval(() => events.push('setTimeout'));
+                Promise.resolve().then(() => events.push('--microtask--'));
+                setTimeout(() => events.push('--macrotask--'));
 
                 store.dispatch(actionBar())
                      .then(wait)
+                     .then(() => delay())
                      .then(() => {
                          // assert
                          expect(events).toEqual([
-                             'reducer bar',
-                             'state changed by action "bar"',
-                             'reaction bar',
-                             'reducer foo',
-                             'state changed by action "foo"',
-                             'reaction foo',
-                             'after sync dispatch foo',
-                             'after sync dispatch bar',
-                             'subscription action bar',
-                             'subscription action foo',
-                             'subscription atom bar',
-                             'subscription atom foo',
-                             'subscription state',
-                             'setTimeout',
-                             'state changed by action "foo marker"',
-                             'subscription action foo marker',
+                             /* + . . */ 'reducer for "bar"',
+                             /* | . . */ 'state changed by action "bar"',
+                             /* | . . */ 'reaction for "bar"',
+                             /* . + . */ 'reducer for "foo"',
+                             /* . | . */ 'state changed by action "foo"',
+                             /* . | + */ 'reaction for "foo"',
+                             /* . | * */ 'dispatch subscription: action "foo"',
+                             /* . | * */ 'atom subscription: "bar"',
+                             /* . | * */ 'atom subscription: "foo"',
+                             /* . | * */ 'action subscription: "foo"',
+                             /* . | * */ 'after sync dispatch "foo"',
+                             /* | . * */ 'dispatch subscription: action "bar"',
+                             /* | . * */ 'action subscription: "bar"',
+                             /* | . * */ 'after sync dispatch "bar"',
+                             /* . . * */ '--microtask--',
+                             /* . . | */ 'state changed by action "foo marker"',
+                             /* . . | */ 'dispatch subscription: action "foo marker"',
+                             /* . . | */ 'action subscription: "foo marker"',
+                             /* . . . */ '--macrotask--',
                          ]);
-                         clearInterval(interval);
                          resolve();
                      });
 
-                events.push('after sync dispatch bar');
+                events.push('after sync dispatch "bar"');
             });
         });
 
