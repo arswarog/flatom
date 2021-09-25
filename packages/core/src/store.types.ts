@@ -4,7 +4,7 @@ import { Subscription } from './common';
 import { Resolver } from './resolver.types';
 
 export type StateSubscription = (state: Record<AtomName, any>, action: AnyAction) => void;
-export type StoreSubscription = (state: Record<AtomName, any>) => void;
+export type DispatchSubscription = (action: AnyAction) => void;
 
 export interface ReadonlyStore {
     getState(): Record<string, any>;
@@ -13,7 +13,7 @@ export interface ReadonlyStore {
 
     getState<T, TAtom>(atom: Atom<TAtom>, selector?: (state: TAtom) => T): Readonly<T>;
 
-    subscribe(cb: StoreSubscription): Subscription;
+    subscribe(cb: DispatchSubscription): Subscription;
 
     subscribe<T>(action: ActionCreator<T>, cb: () => void): Subscription;
 

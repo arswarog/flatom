@@ -1,4 +1,4 @@
-import { ReadonlyStore, StateSubscription, Store, StoreSubscription, FlatomConfig } from './store.types';
+import { ReadonlyStore, StateSubscription, Store, DispatchSubscription, FlatomConfig } from './store.types';
 import { ActionCreator, AnyAction } from './action.types';
 import { Atom, AtomName } from './atom.types';
 import { createSubscription, Subscription, Unsubscribe } from './common';
@@ -19,7 +19,7 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
     /**
      * List of state changes subscriptions
      */
-    let storeSubscriptions = new Set<StoreSubscription>();
+    let dispatchSubscriptions = new Set<DispatchSubscription>();
     /**
      * List of inner atom to atom subscriptions
      */
@@ -62,12 +62,12 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
         return createSubscription(() => immediateSubscriptions.delete(cb));
     }
 
-    function subscribe(cb: StoreSubscription): Subscription;
+    function subscribe(cb: DispatchSubscription): Subscription;
     function subscribe(target: Atom<any> | ActionCreator<any>, cb: (payload?: any) => void): Subscription;
-    function subscribe(target: Atom<any> | ActionCreator<any> | StoreSubscription, cb?: (payload?: any) => void): Subscription {
+    function subscribe(target: Atom<any> | ActionCreator<any> | DispatchSubscription, cb?: (payload?: any) => void): Subscription {
         if (cb === void 0) {
-            storeSubscriptions.add(target as any);
-            return createSubscription(() => storeSubscriptions.delete(target as any));
+            dispatchSubscriptions.add(target as DispatchSubscription);
+            return createSubscription(() => dispatchSubscriptions.delete(target as any));
         }
 
         const subscribeTarget = isAtom(target) ? target : (target as ActionCreator<any>).type;
@@ -178,6 +178,8 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
         trace(`schedule to notify action "${action.type}" subscribers`);
         const cbList = subscriptions.get(action.type);
 
+        dispatchSubscriptions.forEach(cb => cb(action));
+
         Promise.resolve().then(() => {
             // console.info(`[trace] notify action "${action.type}" subscribers`);
             if (cbList)
@@ -209,8 +211,6 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
             const localState = state[atom.key];
             cbList.forEach(cb => cb && cb(localState));
         });
-
-        storeSubscriptions.forEach(cb => cb(state));
 
         changedAtoms.clear();
         somethingsHappened = false;

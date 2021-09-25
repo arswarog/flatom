@@ -42,6 +42,29 @@ describe('Store', () => {
         },
     });
 
+    describe('subscription', () => {
+        describe('for store', () => {
+            test('should receives every action', async () => {
+                const store = createStore();
+
+                const actions: AnyAction[] = [];
+                store.subscribe((action) => actions.push(action));
+                store.subscribe((action) => console.log(action));
+
+                await store.dispatch(setValue({value: 5}));
+
+                expect(actions).toEqual([
+                    {
+                        type: setValue.type,
+                        payload: {
+                            value: 5,
+                        },
+                    },
+                ]);
+            });
+        });
+    });
+
     describe('getState', () => {
         const store = createStore();
         store.subscribe(atom, () => null);
