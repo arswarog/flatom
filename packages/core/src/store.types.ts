@@ -29,7 +29,7 @@ export interface ReadonlyStore {
 export interface Store extends ReadonlyStore {
     resolver: Resolver;
 
-    setState(newState: Record<AtomName, any>, type?: string): Record<AtomName, any>;
+    setState(newState: Record<AtomName, any>, actionType?: string): Record<AtomName, any>;
 
     dispatch(action: AnyAction): Promise<any>;
 
@@ -40,4 +40,8 @@ export interface Store extends ReadonlyStore {
 
 interface DebugAPI {
     onStateChanged(cb: StateSubscription): Subscription;
+}
+
+export interface FlatomConfig {
+    trace?: boolean
 }

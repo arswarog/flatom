@@ -1,11 +1,13 @@
-import { ReadonlyStore, StateSubscription, Store, StoreSubscription } from './store.types';
+import { ReadonlyStore, StateSubscription, Store, StoreSubscription, FlatomConfig } from './store.types';
 import { ActionCreator, AnyAction } from './action.types';
 import { Atom, AtomName } from './atom.types';
 import { createSubscription, Subscription, Unsubscribe } from './common';
 import { isAtom } from './declare-atom';
 import { createResolver } from './resolver';
 
-export function createStore(initialState: Record<AtomName, any> = {}): Store {
+export function createStore(initialState: Record<AtomName, any> = {}, config: FlatomConfig = {}): Store {
+    const trace = config.trace ? msg => console.log('[flatom] ' + msg) : msg => null;
+
     let state: Record<AtomName, any> = initialState;
     let atoms: Atom<any>[] = [];
     let somethingsHappened = false;
@@ -13,7 +15,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
     /**
      * List of immediate state change subscriptions
      */
-    let stateSubscriptions = new Set<StateSubscription>();
+    let immediateSubscriptions = new Set<StateSubscription>();
     /**
      * List of state changes subscriptions
      */
@@ -31,10 +33,6 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
      */
     let gcSubscriptions = new Set<Unsubscribe>();
     let gc: Atom<any>[] | null = null;
-    /**
-     * @deprecated
-     */
-    let timer: any = null;
 
     const readonlyStore: ReadonlyStore = {
         getState,
@@ -60,8 +58,8 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
     };
 
     function onStateChanged(cb: StateSubscription): Subscription {
-        stateSubscriptions.add(cb);
-        return createSubscription(() => stateSubscriptions.delete(cb));
+        immediateSubscriptions.add(cb);
+        return createSubscription(() => immediateSubscriptions.delete(cb));
     }
 
     function subscribe(cb: StoreSubscription): Subscription;
@@ -134,7 +132,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
     }
 
     function dispatch(action: AnyAction): Promise<any> {
-        // console.info(`[trace] dispatch action "${action.type}"`);
+        trace(`dispatch action "${action.type}"`);
 
         // atoms
         const newState = {...state};
@@ -163,10 +161,10 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
             state = newState;
         }
 
-        stateSubscriptions.forEach(cb => cb(state, action));
+        immediateSubscriptions.forEach(cb => cb(state, action));
 
         notifyActionListeners(action);
-        // console.info(`[trace] run reaction for "${action.type}`);
+        trace(`run reaction for "${action.type}"`);
         const result = action.reaction && action.reaction(store, action.payload);
 
         return Promise.resolve()
@@ -177,7 +175,7 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
     }
 
     function notifyActionListeners(action: AnyAction) {
-        // console.info(`[trace] schedule to notify action "${action.type}" subscribers`);
+        trace(`schedule to notify action "${action.type}" subscribers`);
         const cbList = subscriptions.get(action.type);
 
         Promise.resolve().then(() => {
@@ -188,16 +186,17 @@ export function createStore(initialState: Record<AtomName, any> = {}): Store {
     }
 
     function notifyStateListeners() {
-        // const changes: string[] = [];
-        // changedAtoms.forEach(item => changes.push(typeof item.key === 'symbol' ? '[symbol]' : String(item.key)));
+        const changes: string[] = [];
+        if (config.trace)
+            changedAtoms.forEach(item => changes.push(typeof item.key === 'symbol' ? '[symbol]' : String(item.key)));
 
         if (somethingsHappened) {
             somethingsHappened = false;
-            // console.info(`[trace] notifyStateListeners: reschedule, changes: ${changes}`);
+            trace(`notifyStateListeners: reschedule, changes: ${changes}`);
             return Promise.resolve().then(notifyStateListeners);
         }
 
-        // console.info(`[trace] notifyStateListeners: run, changes: ${changes}`);
+        trace(`notifyStateListeners: run, changes: ${changes}`);
 
         if (!changedAtoms.size) //todo
             return;

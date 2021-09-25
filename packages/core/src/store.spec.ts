@@ -83,7 +83,7 @@ describe('Store', () => {
         beforeEach(() => {
             events = [];
 
-            store = createStore();
+            store = createStore({}, {trace: true});
 
             store.debugAPI.onStateChanged((_, action) => events.push('state changed by action "' + action.type + '"'));
             store.subscribe(() => events.push('subscription state'));
