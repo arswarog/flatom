@@ -2,8 +2,6 @@ import { Store } from './store.types';
 
 export type ActionType = string | (string | number)[];
 
-export type PrepareAction<Payload> = (store: Store) => Payload;
-export type PrepareActionWithParams<Payload, Params> = (store: Store, params: Params) => Payload;
 export type Reaction<Payload = void, Result = void> = (store: Store, payload: Payload) => (Result | Promise<Result> | void);
 
 export interface Action {
@@ -21,25 +19,20 @@ export interface PayloadAction<Payload, Result = void> extends AnyAction<Result>
     reaction?: Reaction<Payload, Result>;
 }
 
-export interface SmartAction<Payload, Params, Result = void> extends PayloadAction<Payload, Result> {
-    payload: Payload;
-    params: Params;
-}
-
 export interface ActionCreator<Result = void> {
     readonly type: string;
 
     (): AnyAction<Result>;
 }
 
+export interface PayloadlessActionCreator {
+    readonly type: string;
+
+    (): Action;
+}
+
 export interface PayloadActionCreator<Payload, Result = void> {
     readonly type: string;
 
     (payload: Payload): PayloadAction<Payload, Result>;
-}
-
-export interface SmartActionCreator<Payload, Params = Payload, Result = void> {
-    readonly type: string;
-
-    (payload: Params, store: Store): SmartAction<Payload, Params, Result>;
 }

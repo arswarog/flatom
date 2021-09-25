@@ -2,6 +2,20 @@ import { createStore, declareAction, declareAtom, declareEffect, resetUniqId, St
 
 describe('Store', () => {
     const setValue = declareAction<{ value: number }>('setValue');
+    const atomActions = {
+        setText: (state, text: string) => {
+            return {
+                value: +text,
+                action: 'setText',
+            };
+        },
+        inc: (state, _: void) => {
+            return {
+                value: state.value + 1,
+                action: 'inc',
+            };
+        },
+    };
     const atom = declareAtom('atom', {
         value: 0,
         action: '',
@@ -10,14 +24,7 @@ describe('Store', () => {
             action: 'setValue',
             value: payload.value,
         })),
-    ], {
-        setText: (state, text: string) => {
-            return {
-                value: +text,
-                action: 'setText',
-            };
-        },
-    });
+    ], atomActions);
     const relatedAtom = declareAtom('relatedAtom', {
         value: '',
         action: '',
@@ -61,6 +68,45 @@ describe('Store', () => {
         });
         test('get atom state with selector', () => {
             expect(store.getState(atom, ({value}) => value)).toEqual(0);
+        });
+    });
+    describe('dispatch', () => {
+        test('builtIn action with payload', async () => {
+            const store = createStore();
+
+            const cb: () => void = jest.fn();
+            atom.a.setText;
+            store.subscribe(atom.a.setText, cb);
+
+            await store.dispatch(atom.a.setText('123'));
+
+            expect(cb).toBeCalledTimes(1);
+            expect(cb).toBeCalledWith('123');
+
+            // types
+            // @ts-expect-error
+            store.dispatch(atom.a.setText(123));
+            // @ts-expect-error
+            store.dispatch(atom.a.setText());
+
+        });
+        test('builtIn action without payload', async () => {
+            const store = createStore();
+
+            const cb: () => void = jest.fn();
+            const g = atom.a.inc;
+            store.subscribe(atom.a.inc, cb);
+
+            await store.dispatch(atom.a.inc());
+
+            expect(cb).toBeCalledTimes(1);
+            expect(cb).toBeCalledWith(undefined);
+
+            // types
+            // @ts-expect-error
+            store.dispatch(atom.a.inc(123));
+            // @ts-expect-error
+            store.dispatch(atom.a.inc('123'));
         });
     });
     describe('sequence', () => {
@@ -241,7 +287,7 @@ describe('Store', () => {
             });
 
             // act
-            store.dispatch(atom.setText('5'));
+            store.dispatch(atom.a.setText('5'));
 
             // assert
             expect(store.getState(atom)).toEqual({
@@ -261,7 +307,7 @@ describe('Store', () => {
             store.subscribe(relatedAtom, () => null);
 
             // act
-            store.dispatch(atom.setText('55'));
+            store.dispatch(atom.a.setText('55'));
 
             // assert
             expect(store.getState()).toEqual({
@@ -288,7 +334,7 @@ describe('Store', () => {
             const store = createStore();
             const subscription = store.subscribe(relatedAtom, () => null);
 
-            store.dispatch(atom.setText('12'));
+            store.dispatch(atom.a.setText('12'));
             expect(store.getState(atom)).toEqual({
                 value: 12,
                 action: 'setText',
@@ -317,7 +363,7 @@ describe('Store', () => {
             const store = createStore();
             store.subscribe(atom, () => null);
 
-            store.dispatch(atom.setText('10'));
+            store.dispatch(atom.a.setText('10'));
             expect(store.getState(atom)).toEqual({
                 value: 10,
                 action: 'setText',
@@ -345,7 +391,7 @@ describe('Store', () => {
             const subscription = store.subscribe(relatedAtom, () => null);
             const subscription2 = store.subscribe(anotherRelatedAtom, () => null);
 
-            store.dispatch(atom.setText('5'));
+            store.dispatch(atom.a.setText('5'));
             expect(store.getState()).toEqual({
                 atom: {
                     value: 5,
@@ -398,7 +444,7 @@ describe('Store', () => {
 
             // act
             store.subscribe(atom, (state) => value = state);
-            await store.dispatch(atom.setText('10'));
+            await store.dispatch(atom.a.setText('10'));
 
             // assert
             expect(value).toEqual({value: 10, action: 'setText'});

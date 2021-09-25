@@ -1,5 +1,5 @@
 import { ValueProvider } from './provider.types';
-import { Action, AnyAction } from './action.types';
+import { AnyAction, PayloadActionCreator, PayloadlessActionCreator } from './action.types';
 
 export type AtomName = string;
 
@@ -22,7 +22,11 @@ export type Reducers<TState, TActions extends {}> = {
 }
 
 export type ActionCreators<TActions extends {}> = {
-    [key in keyof TActions]: (payload: TActions[key]) => Action;
+    // [key in keyof TActions]: PayloadActionCreator<TActions[key]>;
+    [key in keyof TActions]: TActions[key] extends void ? PayloadlessActionCreator : PayloadActionCreator<TActions[key]>;
 }
 
-export type AtomWithActionCreators<TState, TActions> = Atom<TState> & ActionCreators<TActions>
+export interface AtomWithActionCreators<TState, TActions> extends Atom<TState> {
+    actions: ActionCreators<TActions>;
+    a: ActionCreators<TActions>;
+}

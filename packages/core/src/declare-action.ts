@@ -2,11 +2,9 @@ import {
     ActionCreator,
     ActionType,
     PayloadActionCreator,
-    PrepareAction, PrepareActionWithParams,
-    Reaction, SmartActionCreator,
+    Reaction,
 } from './action.types';
 import { makeName, uniqName } from './common';
-import { Store } from './store.types';
 
 export function declareAction(type?: ActionType): ActionCreator;
 export function declareAction<Payload>(type?: ActionType): PayloadActionCreator<Payload>;
@@ -31,7 +29,7 @@ export function declareEffect<Payload = void, Result = unknown>(
 export function declareEffect<Payload = void, Result = unknown>(
     type: ActionType,
     reaction: Reaction<Payload, Result>,
-):  PayloadActionCreator<Payload, Result> {
+): PayloadActionCreator<Payload, Result> {
     type = makeName(type || uniqName('action'));
 
     const actionCreator = (payload) => ({

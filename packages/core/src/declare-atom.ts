@@ -4,7 +4,7 @@ import {
 } from './action.types';
 import { PayloadReducer } from './common';
 import { Store } from './store.types';
-import { ActionCreators, Atom, AtomName, Reducers } from './atom.types';
+import { ActionCreators, Atom, AtomName, AtomWithActionCreators, Reducers } from './atom.types';
 import { declareAction, isActionCreator } from './declare-action';
 
 interface ReducerCreator<TState> {
@@ -21,7 +21,7 @@ export function declareAtom<TState, TActions = {}>(
     initialState: TState | undefined,
     reducerCreator: (on: ReducerCreator<TState>) => void,
     actions?: Reducers<TState, TActions>,
-): Atom<TState> & ActionCreators<TActions> {
+): AtomWithActionCreators<TState, TActions> {
     if (Array.isArray(key)) {
         key = key.join('/');
     }
@@ -93,15 +93,18 @@ export function declareAtom<TState, TActions = {}>(
 
         Object.keys(actions).forEach(actionKey => {
             const action = declareAction([key + ':' + actionKey]);
-            if (actionKey in atom)
+            if (actionKey in actionsMap)
                 throw new Error(`Can not create builtIn action with key "${actionKey}": key already exists`);
             else
-                atom[actionKey] = action;
+                actionsMap[actionKey] = action;
             const reducer = actions[actionKey];
             checkReducer(reducer);
             on(action, reducer);
         });
     }
+
+    atom.actions = actionsMap;
+    atom.a = actionsMap;
 
     return atom;
 }

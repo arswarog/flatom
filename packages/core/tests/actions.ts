@@ -83,10 +83,10 @@ describe('actions', () => {
 
         it('action with payload', () => {
             // @ts-expect-error
-            atom.setValue();
+            atom.a.setValue();
             // @ts-expect-error
-            atom.setValue('bad type');
-            const action: Action = atom.setValue(5);
+            atom.a.setValue('bad type');
+            const action: Action = atom.a.setValue(5);
             expect(action).toEqual({
                 type: 'atom:setValue',
                 payload: 5,

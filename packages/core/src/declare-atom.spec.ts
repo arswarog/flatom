@@ -1,5 +1,5 @@
 import { declareAtom } from '../src/declare-atom';
-import { declareAction } from '../src/declare-action';
+import { declareAction, isActionCreator } from '../src/declare-action';
 
 describe('Atom', () => {
     describe('properties', () => {
@@ -22,6 +22,12 @@ describe('Atom', () => {
         test('deny to empty array atomName', () => {
             expect(() => declareAtom([], {}, _ => []))
                 .toThrow(`AtomName cannot be empty`);
+        });
+        test('builtIn action is correct action', () => {
+            const atom = declareAtom('test id', {}, _ => [], {
+                setValue(state, _: number) {return state;},
+            });
+            expect(isActionCreator(atom.a.setValue)).toBe(true);
         });
     });
     describe('reducer functionality', () => {
@@ -73,7 +79,7 @@ describe('Atom', () => {
             });
         });
         test('built in action', () => {
-            const state = atom(undefined, atom.setText('20'));
+            const state = atom(undefined, atom.a.setText('20'));
 
             expect(state).toEqual({
                 value: 20,
@@ -158,7 +164,7 @@ describe('Atom', () => {
 
                 // assert
                 expect(state).toEqual({
-                    value: "",
+                    value: '',
                     action: 'some action',
                 });
             });
