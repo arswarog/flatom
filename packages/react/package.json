@@ -32,6 +32,7 @@
   "scripts": {
     "prepublishOnly": "npm run rebuild",
     "postpublish": "npm run clean",
+    "dev": "cross-env fixme=fixme ../../node_modules/.bin/microbundle watch --external=react,@flatom/core",
     "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --external=react,@flatom/core",
     "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf dist/",
     "rebuild": "npm run clean && npm run build",
