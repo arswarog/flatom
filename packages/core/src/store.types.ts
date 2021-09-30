@@ -1,10 +1,11 @@
 import { Atom, AtomName } from './atom.types';
-import { ActionCreator, AnyAction, PayloadActionCreator } from './action.types';
+import { ActionCreator, Action, PayloadActionCreator } from './action.types';
 import { Subscription } from './common';
 import { Resolver } from './resolver.types';
 
-export type StateSubscription = (state: Record<AtomName, any>, action: AnyAction) => void;
-export type DispatchSubscription = (action: AnyAction) => void;
+export type State = Record<string | symbol, any>
+export type StateSubscription = (state: Record<AtomName, any>, action: Action) => void;
+export type DispatchSubscription = (action: Action) => void;
 
 export interface ReadonlyStore {
     getState(): Record<string, any>;
@@ -15,13 +16,9 @@ export interface ReadonlyStore {
 
     subscribe(cb: DispatchSubscription): Subscription;
 
-    subscribe<T>(action: ActionCreator<T>, cb: () => void): Subscription;
+    subscribe(action: ActionCreator, cb: () => void): Subscription;
 
-    subscribe<T>(action: ActionCreator<T>, cb: (payload: T) => void): Subscription;
-
-    subscribe<T>(action: PayloadActionCreator<T>, cb: (payload: T) => void): Subscription;
-
-    subscribe<T>(target: Atom<T> | ActionCreator<T>, cb: (state: T) => void): Subscription;
+    subscribe<T = unknown>(target: Atom<T> | ActionCreator | PayloadActionCreator<T>, cb: (payload: T) => void): Subscription;
 
     resolve: Resolver['get'];
 }
@@ -31,7 +28,7 @@ export interface Store extends ReadonlyStore {
 
     setState(newState: Record<AtomName, any>, actionType?: string): Record<AtomName, any>;
 
-    dispatch(action: AnyAction): Promise<any>;
+    dispatch(action: Action): Promise<any>;
 
     onGarbageCollected(cb: () => void): Subscription;
 
@@ -43,5 +40,5 @@ interface DebugAPI {
 }
 
 export interface FlatomConfig {
-    trace?: boolean
+    trace?: boolean;
 }

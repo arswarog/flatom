@@ -19,6 +19,7 @@ export function declareAction(
         payload,
     });
     actionCreator.type = type;
+    actionCreator.getType = () => type as string;
     return actionCreator;
 }
 
@@ -38,6 +39,7 @@ export function declareEffect<Payload = void, Result = unknown>(
         reaction,
     });
     actionCreator.type = type;
+    actionCreator.getType = () => type as string;
     return actionCreator;
 }
 

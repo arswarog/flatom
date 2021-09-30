@@ -1,5 +1,5 @@
 import {
-    ActionCreator, AnyAction,
+    ActionCreator, Action,
     PayloadActionCreator,
 } from './action.types';
 import { PayloadReducer } from './common';
@@ -12,7 +12,7 @@ interface ReducerCreator<TState> {
 
     <TPayload>(atom: Atom<TPayload>, reducer: PayloadReducer<TState, TPayload>): void;
 
-    other<TPayload>(reducer: (state: TState, action: AnyAction<TPayload>) => TState): void;
+    other<TPayload>(reducer: (state: TState, action: Action<TPayload>) => TState): void;
 }
 
 // todo optional key, initialState
@@ -50,7 +50,7 @@ export function declareAtom<TState, TActions = {}>(
         } else
             throw new Error('Invalid target');
     };
-    on.other = <TPayload>(reducer: (state: TState | undefined, action: AnyAction<TPayload>) => TState) => {
+    on.other = <TPayload>(reducer: (state: TState | undefined, action: Action<TPayload>) => TState) => {
         if (otherReducer)
             throw new Error('on.other already set');
 
@@ -61,7 +61,7 @@ export function declareAtom<TState, TActions = {}>(
 
     reducerCreator(on);
 
-    const atom: any = (state: TState, {type, payload}: AnyAction | { type: Atom<any>, payload: any }) => {
+    const atom: any = (state: TState, {type, payload}: Action | { type: Atom<any>, payload: any }) => {
         if (!type)
             return state || initialState;
 

@@ -1,5 +1,5 @@
 import { ReadonlyStore, StateSubscription, Store, DispatchSubscription, FlatomConfig } from './store.types';
-import { ActionCreator, AnyAction } from './action.types';
+import { ActionCreator, Action } from './action.types';
 import { Atom, AtomName } from './atom.types';
 import { createSubscription, Subscription, Unsubscribe } from './common';
 import { isAtom } from './declare-atom';
@@ -130,7 +130,7 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
         return true;
     }
 
-    function dispatch(action: AnyAction): Promise<any> {
+    function dispatch(action: Action): Promise<any> {
         trace(`dispatch action "${action.type}"`);
 
         // atoms
@@ -171,11 +171,11 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
         return Promise.resolve(result);
     }
 
-    function notifyStoreListeners(action: AnyAction) {
+    function notifyStoreListeners(action: Action) {
         dispatchSubscriptions.forEach(cb => cb(action));
     }
 
-    function notifyActionListeners(action: AnyAction) {
+    function notifyActionListeners(action: Action) {
         const cbList = subscriptions.get(action.type);
 
         trace(`notify action "${action.type}" subscribers`);

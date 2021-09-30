@@ -4,17 +4,18 @@ export type ActionType = string | (string | number)[];
 
 export type Reaction<Payload = void, Result = void> = (store: Store, payload: Payload) => (Result | Promise<Result> | void);
 
-export interface Action {
+export interface Action<T = unknown> {
     type: string;
+    payload?: T;
+    reaction?: Reaction<any, any>;
 }
 
-export interface AnyAction<Result = any> {
+export interface SimpleAction extends Action<void> {
     type: string;
-    payload?: any;
-    reaction?: Reaction<any, Result>;
+    reaction?: Reaction<any, any>;
 }
 
-export interface PayloadAction<Payload, Result = void> extends AnyAction<Result> {
+export interface PayloadAction<Payload, Result = void> extends Action<Payload> {
     payload: Payload;
     reaction?: Reaction<Payload, Result>;
 }
@@ -22,17 +23,32 @@ export interface PayloadAction<Payload, Result = void> extends AnyAction<Result>
 export interface ActionCreator<Result = void> {
     readonly type: string;
 
-    (): AnyAction<Result>;
+    /**
+     * For compatibility with reatom
+     */
+    getType(): string;
+
+    (): Action<Result>;
 }
 
 export interface PayloadlessActionCreator {
     readonly type: string;
+
+    /**
+     * For compatibility with reatom
+     */
+    getType(): string;
 
     (): Action;
 }
 
 export interface PayloadActionCreator<Payload, Result = void> {
     readonly type: string;
+
+    /**
+     * For compatibility with reatom
+     */
+    getType(): string;
 
     (payload: Payload): PayloadAction<Payload, Result>;
 }

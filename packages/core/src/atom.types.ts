@@ -1,5 +1,5 @@
 import { ValueProvider } from './provider.types';
-import { AnyAction, PayloadActionCreator, PayloadlessActionCreator } from './action.types';
+import { Action, PayloadActionCreator, PayloadlessActionCreator } from './action.types';
 
 export type AtomName = string;
 
@@ -12,7 +12,7 @@ export interface Atom<TState> extends ValueProvider<TState> {
 
     readonly hasOtherReducer: boolean;
 
-    (state: TState | undefined, action: AnyAction): TState;
+    (state: TState | undefined, action: Action): TState;
 
     <T>(state: TState | undefined, action: { type: Atom<T>, payload: T }): TState;
 }
