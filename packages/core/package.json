@@ -24,10 +24,6 @@
     "/package.json",
     "/dist"
   ],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "scripts": {
     "prepublishOnly": "npm run rebuild",
     "postpublish": "npm run clean",
