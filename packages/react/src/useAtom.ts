@@ -13,9 +13,12 @@ export function useAtom(atom: Atom<any>, selector?: (value: any) => any, deps?: 
     const state = store.getState(atom, selector);
     const [_, setState] = useState(state);
 
-    useEffect(() => () => {
-        setTimeout(() => subscription.current && subscription.current.unsubscribe(), 0);
-    }, deps ? [...deps.concat(atom)] : [atom]);
+    useEffect(
+        () => () => {
+            setTimeout(() => subscription.current && subscription.current.unsubscribe(), 0);
+        },
+        deps ? [...deps.concat(atom)] : [atom],
+    );
 
     if (!subscription.current) {
         subscription.current = store.subscribe(atom, setState);

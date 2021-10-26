@@ -22,7 +22,9 @@
     "postclean": "rm -rf packages/*/node_modules packages/*/src/*.d.ts packages/*/src/**/*.d.ts",
     "prerebuild": "yarn run clean",
     "rebuild": "lerna bootstrap",
-    "postrebuild": "lerna run build"
+    "postrebuild": "lerna run build",
+    "prettier:check": "prettier --check **/*.ts",
+    "prettier:fix": "prettier --write **/*.ts"
   },
   "keywords": [
     "flatom",
@@ -44,6 +46,7 @@
     "jest": "^26.6.3",
     "lerna": "^3.20.2",
     "microbundle": "^0.13.0",
+    "prettier": "^2.4.1",
     "react": "^17.0.1",
     "size-limit": "^4.9.2",
     "ts-jest": "^26.5.0",

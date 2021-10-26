@@ -37,7 +37,7 @@ describe('Resolver', () => {
             const token = createToken('foo');
 
             expect('' + token).toEqual('Token foo');
-            expect(JSON.stringify({token})).toEqual('{"token":"Token foo"}');
+            expect(JSON.stringify({ token })).toEqual('{"token":"Token foo"}');
         });
     });
     describe('get', () => {

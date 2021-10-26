@@ -8,4 +8,4 @@ export interface ValueProvider<T> {
 
 export type ValueProviders<T extends any[]> = {
     [K in keyof T]: ValueProvider<T[K]>;
-}
+};

@@ -1,17 +1,10 @@
-import {
-    ActionCreator,
-    ActionType,
-    PayloadActionCreator,
-    Reaction,
-} from './action.types';
+import { ActionCreator, ActionType, PayloadActionCreator, Reaction } from './action.types';
 import { makeName, uniqName } from './common';
 
 export function declareAction(type?: ActionType): ActionCreator;
 export function declareAction<Payload>(type?: ActionType): PayloadActionCreator<Payload>;
 
-export function declareAction(
-    type?: ActionType,
-): ActionCreator | PayloadActionCreator<any> {
+export function declareAction(type?: ActionType): ActionCreator | PayloadActionCreator<any> {
     type = makeName(type || uniqName('action'));
 
     const actionCreator = (payload) => ({

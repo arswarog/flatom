@@ -5,20 +5,11 @@ export interface Resolver {
 
     get<T>(token: Token<T>, allowFail: true): T | undefined;
 
-    getMany<T1>(tokens: [
-        Token<T1>
-    ]): [T1];
+    getMany<T1>(tokens: [Token<T1>]): [T1];
 
-    getMany<T1, T2>(tokens: [
-        Token<T1>,
-        Token<T2>
-    ]): [T1, T2];
+    getMany<T1, T2>(tokens: [Token<T1>, Token<T2>]): [T1, T2];
 
-    getMany<T1, T2, T3>(tokens: [
-        Token<T1>,
-        Token<T2>,
-        Token<T3>
-    ]): [T1, T2, T3];
+    getMany<T1, T2, T3>(tokens: [Token<T1>, Token<T2>, Token<T3>]): [T1, T2, T3];
 
     getMany(tokens: Token<unknown>[]): unknown[];
 

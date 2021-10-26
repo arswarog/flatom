@@ -3,7 +3,7 @@ import { ActionCreator, Action, PayloadActionCreator } from './action.types';
 import { Subscription } from './common';
 import { Resolver } from './resolver.types';
 
-export type State = Record<string | symbol, any>
+export type State = Record<string | symbol, any>;
 export type StateSubscription = (state: Record<AtomName, any>, action: Action) => void;
 export type DispatchSubscription = (action: Action) => void;
 
@@ -18,7 +18,10 @@ export interface ReadonlyStore {
 
     subscribe(action: ActionCreator, cb: () => void): Subscription;
 
-    subscribe<T = unknown>(target: Atom<T> | ActionCreator | PayloadActionCreator<T>, cb: (payload: T) => void): Subscription;
+    subscribe<T = unknown>(
+        target: Atom<T> | ActionCreator | PayloadActionCreator<T>,
+        cb: (payload: T) => void,
+    ): Subscription;
 
     resolve: Resolver['get'];
 }
