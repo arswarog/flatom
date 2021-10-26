@@ -16,16 +16,19 @@ describe('Atom', () => {
             expect(atom.key).toBe('test/5');
         });
         test('deny to empty atomName', () => {
-            expect(() => declareAtom('', {})({}))
-                .toThrow(`AtomName cannot be empty`);
+            expect(() => declareAtom('', {})({})).toThrow(`AtomName cannot be empty`);
         });
         test('deny to empty array atomName', () => {
-            expect(() => declareAtom([], {})({}))
-                .toThrow(`AtomName cannot be empty`);
+            expect(() => declareAtom([], {})({})).toThrow(`AtomName cannot be empty`);
         });
         test('builtIn action is correct action', () => {
-            const atom = declareAtom('test id', {})({
-                setValue(state, _: number) {return state;},
+            const atom = declareAtom(
+                'test id',
+                {},
+            )({
+                setValue(state, _: number) {
+                    return state;
+                },
             });
             expect(isActionCreator(atom.a.setValue)).toBe(true);
         });
@@ -35,24 +38,27 @@ describe('Atom', () => {
         const atom = declareAtom('atom', {
             value: 0,
             action: '',
-        })(on => [
-            on(setValue, (state, payload) => ({
-                action: 'setValue',
-                value: payload.value,
-            })),
-        ], {
-            setText: (state, text: string) => {
-                return {
-                    value: +text,
-                    action: 'setText',
-                };
+        })(
+            (on) => [
+                on(setValue, (state, payload) => ({
+                    action: 'setValue',
+                    value: payload.value,
+                })),
+            ],
+            {
+                setText: (state, text: string) => {
+                    return {
+                        value: +text,
+                        action: 'setText',
+                    };
+                },
             },
-        });
+        );
         const relatedAtom = declareAtom('relatedAtom', {
             value: '',
             action: '',
-        })(on => [
-            on(atom, (state, {value}) => ({
+        })((on) => [
+            on(atom, (state, { value }) => ({
                 action: 'atom',
                 value: value.toString(),
             })),
@@ -63,7 +69,10 @@ describe('Atom', () => {
         ]);
 
         test('atom', () => {
-            const state = relatedAtom(undefined, {type: atom, payload: {value: 10, action: ''}} as any);
+            const state = relatedAtom(undefined, {
+                type: atom,
+                payload: { value: 10, action: '' },
+            } as any);
 
             expect(state).toEqual({
                 value: '10',
@@ -71,7 +80,7 @@ describe('Atom', () => {
             });
         });
         test('action', () => {
-            const state = atom(undefined, setValue({value: 10}));
+            const state = atom(undefined, setValue({ value: 10 }));
 
             expect(state).toEqual({
                 value: 10,
@@ -88,7 +97,7 @@ describe('Atom', () => {
         });
         test('unknown action and state by default', () => {
             // act
-            const state = atom(undefined, {type: 'unknown action'});
+            const state = atom(undefined, { type: 'unknown action' });
 
             expect(state).toEqual({
                 value: 0,
@@ -105,49 +114,27 @@ describe('Atom', () => {
             });
         });
         test('discard duplicate target atoms', () => {
-            expect(() => declareAtom(
-                'test')(
-                on => [
-                    on(atom, state => state),
-                    on(atom, state => state),
-                ],
-            )).toThrow('Reaction for atom "atom" already set');
+            expect(() => declareAtom('test')((on) => [on(atom, (state) => state), on(atom, (state) => state)])).toThrow(
+                'Reaction for atom "atom" already set',
+            );
         });
         test('discard duplicate target actions', () => {
-            expect(() => declareAtom(
-                'test',
-            )(on => [
-                on(setValue, state => state),
-                on(setValue, state => state),
-            ])).toThrow('Reaction for action "setValue" already set');
+            expect(() =>
+                declareAtom('test')((on) => [on(setValue, (state) => state), on(setValue, (state) => state)]),
+            ).toThrow('Reaction for action "setValue" already set');
         });
         test('discard invalid target', () => {
-            expect(() => declareAtom(
-                'test',
-            )(
-                on => [
-                    on(null as any, state => state),
-                ],
-            )).toThrow('Invalid target');
+            expect(() => declareAtom('test')((on) => [on(null as any, (state) => state)])).toThrow('Invalid target');
         });
         test('discard invalid reducer', () => {
-            expect(() => declareAtom(
-                'test',
-            )(
-                on => [
-                    on(setValue, null as any),
-                ],
-            )).toThrow('Invalid reducer for target "setValue"');
+            expect(() => declareAtom('test')((on) => [on(setValue, null as any)])).toThrow(
+                'Invalid reducer for target "setValue"',
+            );
         });
         test('discard duplicate register other', () => {
-            expect(() => declareAtom(
-                'test',
-            )(
-                on => [
-                    on.other(state => state),
-                    on.other(state => state),
-                ],
-            )).toThrow('on.other already set');
+            expect(() => declareAtom('test')((on) => [on.other((state) => state), on.other((state) => state)])).toThrow(
+                'on.other already set',
+            );
         });
         describe('on.other', () => {
             // arrange

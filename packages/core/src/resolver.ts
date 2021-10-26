@@ -11,7 +11,7 @@ export function createResolver(): Resolver {
     };
 
     function clear() {
-        valueMap.clear()
+        valueMap.clear();
     }
 
     function setValue<T>(token: Token<T>, value: T) {
@@ -23,12 +23,9 @@ export function createResolver(): Resolver {
     }
 
     function resolve<T>(token: Token<T>, allowFail = false): T | undefined {
-        if (valueMap.has(token))
-            return valueMap.get(token) as T;
-        if (allowFail)
-            return undefined;
-        else
-            throw new Error();
+        if (valueMap.has(token)) return valueMap.get(token) as T;
+        if (allowFail) return undefined;
+        else throw new Error();
     }
 
     function resolveMany(tokens: Token<any[]>): any[] {
