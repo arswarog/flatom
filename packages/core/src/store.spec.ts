@@ -20,7 +20,7 @@ describe('Store', () => {
     const atom = declareAtom('atom', {
         value: 0,
         action: '',
-    }, on => [
+    })(on => [
         on(setValue, (state, payload) => ({
             action: 'setValue',
             value: payload.value,
@@ -29,19 +29,22 @@ describe('Store', () => {
     const relatedAtom = declareAtom('relatedAtom', {
         value: '',
         action: '',
-    }, on => [
-        on(atom, (state, {value}) => ({
-            action: 'atom',
-            value: value.toString(),
-        })),
-    ], {
-        setDirectText: (state, text: string) => {
-            return {
-                value: text,
-                action: 'setDirectText',
-            };
+    })(
+        {
+            setDirectText: (state, text: string) => {
+                return {
+                    value: text,
+                    action: 'setDirectText',
+                };
+            },
         },
-    });
+        on => [
+            on(atom, (state, {value}) => ({
+                action: 'atom',
+                value: value.toString(),
+            })),
+        ],
+    );
 
     describe('subscription', () => {
         describe('for store', () => {
@@ -150,7 +153,7 @@ describe('Store', () => {
             return dispatch(actionFooMarker());
         });
 
-        const atomFoo = declareAtom('atomFoo', 0, on => on(actionFoo, (state) => {
+        const atomFoo = declareAtom('atomFoo', 0)(on => on(actionFoo, (state) => {
             events.push('reducer for "foo"');
             return state + 1;
         }));
@@ -196,7 +199,7 @@ describe('Store', () => {
                 // arrange
                 const actionImmediate = declareAction(['immediate']);
 
-                const atomImmediate = declareAtom(['immediate'], 0, on => on(actionImmediate, state => state + 1));
+                const atomImmediate = declareAtom(['immediate'], 0)(on => on(actionImmediate, state => state + 1));
 
                 const actionBar = declareEffect(['bar'], ({dispatch}) => {
                     events.push('reaction for "bar"');
@@ -204,7 +207,7 @@ describe('Store', () => {
                     events.push('after sync dispatch "foo"');
                 });
 
-                const atomBar = declareAtom('bar', 0, on => on(actionBar, state => {
+                const atomBar = declareAtom('bar', 0)(on => on(actionBar, state => {
                     events.push('reducer for "bar"');
                     return state + 1;
                 }));
@@ -262,7 +265,7 @@ describe('Store', () => {
                     events.push('after sync dispatch "foo"');
                 });
 
-                const atomBar = declareAtom('bar', 0, on => on(actionBar, state => {
+                const atomBar = declareAtom('bar', 0)(on => on(actionBar, state => {
                     events.push('reducer for "bar"');
                     return state + 1;
                 }));
@@ -416,7 +419,7 @@ describe('Store', () => {
             const anotherRelatedAtom = declareAtom<{ value: number }>(
                 'anotherRelatedAtom',
                 {value: 0},
-                on => on(atom, (_, {value}) => ({
+            )(on => on(atom, (_, {value}) => ({
                     value,
                 })),
             );
@@ -514,7 +517,7 @@ describe('Store', () => {
             expect(value).toEqual({value: 10});
         });
         test('error in atom', () => {
-            const atom = declareAtom('some', {}, on => on(setValue, () => {
+            const atom = declareAtom('some', {})(on => on(setValue, () => {
                 throw new Error('Some error');
             }));
 

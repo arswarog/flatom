@@ -20,13 +20,13 @@ export function map<Target, Result>(
     if (!deps)
         return declareAtom<Result>(
             Symbol('map atom') as any,
-            undefined,
+        )(
             on => on(target, (_, value) => mapper(value)),
         );
 
     const atom = declareAtom<Result & { [memoStorage]: Target }>(
         Symbol('memoMap atom') as any,
-        undefined,
+    )(
         on => on(target, (oldState, value) => {
             if (oldState && deps.every(
                 (selector, index) => oldState[memoStorage][index] === selector(value),
@@ -46,7 +46,7 @@ export function combine<Target, Result>(
 ): Atom<Result> {
     const atom = declareAtom<Result>(
         '',
-        undefined,
+    )(
         on => on(target, (_, value) => mapper(value)),
     );
     return atom;
