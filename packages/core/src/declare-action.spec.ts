@@ -15,7 +15,7 @@ describe('declareAction', () => {
 
             const action2bad1: SimpleAction = {
                 type: 'action2',
-                // @ts-expect-error
+                // @ts-expect-error check for valid types
                 payload: '5',
             };
 
@@ -26,7 +26,7 @@ describe('declareAction', () => {
 
             const action3bad1: PayloadAction<void> = {
                 type: 'action3',
-                // @ts-expect-error
+                // @ts-expect-error check for valid types
                 payload: '5',
             };
         });
@@ -44,11 +44,11 @@ describe('declareAction', () => {
             const ac = declareAction('action');
 
             const action: Action = ac();
-            //@ts-expect-error
+            //@ts-expect-error check for valid types
             const action2: Action<number> = ac();
-            //@ts-expect-error
+            //@ts-expect-error check for valid types
             const action3: Action<number> = ac(5);
-            //@ts-expect-error
+            //@ts-expect-error check for valid types
             const action4: Action = ac(5);
         });
         it('string param', () => {
@@ -64,11 +64,11 @@ describe('declareAction', () => {
             const ac = declareAction<string>('action');
 
             const action: PayloadAction<string> = ac('');
-            //@ts-expect-error
+            //@ts-expect-error check for valid types
             const action2: PayloadAction<number> = ac();
-            //@ts-expect-error
+            //@ts-expect-error check for valid types
             const action3: PayloadAction<number> = ac(5);
-            //@ts-expect-error
+            //@ts-expect-error check for valid types
             const action4: PayloadAction<string, boolean> = ac('5');
         });
     });

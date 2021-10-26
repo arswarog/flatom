@@ -16,7 +16,7 @@ interface ReducerCreator<TState> {
 }
 
 export function declareAtom<TState>(atomName: AtomName | (string | number)[], initialState?: TState) {
-    function privateDeclareReducers<TActions = {}>(
+    function privateDeclareReducers<TActions = Record<string, any>>(
         reducerCreator: (on: ReducerCreator<TState>) => void,
         actions?: Reducers<TState, TActions>,
     ): AtomWithActionCreators<TState, TActions> {
@@ -97,15 +97,15 @@ export function declareAtom<TState>(atomName: AtomName | (string | number)[], in
         return atom;
     }
 
-    function declareReducers<TActions = {}>(
+    function declareReducers<TActions = Record<string, any>>(
         reducerCreator: (on: ReducerCreator<TState>) => void,
         actions?: Reducers<TState, TActions>,
     ): AtomWithActionCreators<TState, TActions>;
-    function declareReducers<TActions = {}>(
+    function declareReducers<TActions = Record<string, any>>(
         actions: Reducers<TState, TActions>,
         reducerCreator?: (on: ReducerCreator<TState>) => void,
     ): AtomWithActionCreators<TState, TActions>;
-    function declareReducers<TActions = {}>(
+    function declareReducers<TActions = Record<string, any>>(
         arg1: ((on: ReducerCreator<TState>) => void) | Reducers<TState, TActions>,
         arg2?: ((on: ReducerCreator<TState>) => void) | Reducers<TState, TActions>,
     ): AtomWithActionCreators<TState, TActions> {

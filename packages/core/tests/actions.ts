@@ -15,8 +15,7 @@ describe('actions', () => {
                 value: 10,
             });
 
-            // type asserts
-            // @ts-expect-error
+            // @ts-expect-error error if invalid type
             setNum({ value: '10' });
         });
         test('simple uniq action', () => {
@@ -71,9 +70,9 @@ describe('actions', () => {
         });
 
         it('action with payload', () => {
-            // @ts-expect-error
+            // @ts-expect-error error if no params when it needs
             atom.a.setValue();
-            // @ts-expect-error
+            // @ts-expect-error error if bad param type
             atom.a.setValue('bad type');
             const action: Action = atom.a.setValue(5);
             expect(action).toEqual({

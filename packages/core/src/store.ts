@@ -14,23 +14,23 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
     /**
      * List of immediate state change subscriptions
      */
-    let immediateSubscriptions = new Set<StateSubscription>();
+    const immediateSubscriptions = new Set<StateSubscription>();
     /**
      * List of state changes subscriptions
      */
-    let dispatchSubscriptions = new Set<DispatchSubscription>();
+    const dispatchSubscriptions = new Set<DispatchSubscription>();
     /**
      * List of inner atom to atom subscriptions
      */
-    let innerSubscriptions = new Map<Atom<any>, Subscription[]>();
+    const innerSubscriptions = new Map<Atom<any>, Subscription[]>();
     /**
      * List of targeted subscriptions
      */
-    let subscriptions = new Map<any, ((payload: any) => void)[]>();
+    const subscriptions = new Map<any, ((payload: any) => void)[]>();
     /**
      * List of GC subscriptions
      */
-    let gcSubscriptions = new Set<Unsubscribe>();
+    const gcSubscriptions = new Set<Unsubscribe>();
     let gc: Atom<any>[] | null = null;
 
     const readonlyStore: ReadonlyStore = {
