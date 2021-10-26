@@ -87,7 +87,7 @@ describe('extra atom', () => {
 
     describe('map (with deps)', () => {
         test('type checking', () => {
-            // @ts-expect-error
+            // @ts-expect-error result must be an object
             map(targetFoo, (state) => state.foo, [(state) => state.foo]);
         });
         test('check caching value', async () => {

@@ -17,11 +17,11 @@ export interface Atom<TState> extends ValueProvider<TState> {
     <T>(state: TState | undefined, action: { type: Atom<T>; payload: T }): TState;
 }
 
-export type Reducers<TState, TActions extends {}> = {
+export type Reducers<TState, TActions extends Record<string, any>> = {
     [key in keyof TActions]: (state: TState, payload: TActions[key]) => TState;
 };
 
-export type ActionCreators<TActions extends {}> = {
+export type ActionCreators<TActions extends Record<string, any>> = {
     // [key in keyof TActions]: PayloadActionCreator<TActions[key]>;
     [key in keyof TActions]: TActions[key] extends void
         ? PayloadlessActionCreator

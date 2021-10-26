@@ -69,8 +69,8 @@ describe('Store', () => {
                 ]);
             });
         });
-        describe('for atom', () => {});
-        describe('for action', () => {});
+        describe.skip('for atom', () => null);
+        describe.skip('for action', () => null);
     });
 
     describe('getState', () => {
@@ -115,9 +115,9 @@ describe('Store', () => {
             expect(cb).toBeCalledWith('123');
 
             // types
-            // @ts-expect-error
+            // @ts-expect-error error because invalid type
             store.dispatch(atom.a.setText(123));
-            // @ts-expect-error
+            // @ts-expect-error error because invalid type
             store.dispatch(atom.a.setText());
         });
         test('builtIn action without payload', async () => {
@@ -133,9 +133,9 @@ describe('Store', () => {
             expect(cb).toBeCalledWith(undefined);
 
             // types
-            // @ts-expect-error
+            // @ts-expect-error error because invalid type
             store.dispatch(atom.a.inc(123));
-            // @ts-expect-error
+            // @ts-expect-error error because invalid type
             store.dispatch(atom.a.inc('123'));
         });
     });
@@ -324,8 +324,8 @@ describe('Store', () => {
             });
         });
 
-        describe('error in reactions', () => {});
-        describe('error in subscribers', () => {});
+        describe.skip('error in reactions', () => null);
+        describe.skip('error in subscribers', () => null);
     });
     describe('atoms', () => {
         test('single atom', () => {

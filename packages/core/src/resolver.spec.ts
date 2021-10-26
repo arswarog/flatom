@@ -17,20 +17,20 @@ describe('Resolver', () => {
 
         it('check types', () => {
             const token: Token<IFoo> = createToken<IFoo>('foo');
-            // @ts-expect-error
+            // @ts-expect-error check for valid types
             const token2: Token<IFoo> = createToken<IBar>('bar');
 
             const value1: IFoo = resolve(token);
-            // @ts-expect-error
+            // @ts-expect-error check for valid types
             const value2: IBar = resolve(token);
         });
         it('token unuseful without type', () => {
             const token = createToken('foo');
 
             const value1 = resolve(token);
-            // @ts-expect-error
+            // @ts-expect-error check for valid types
             value1.anyField;
-            // @ts-expect-error
+            // @ts-expect-error check for valid types
             const value2: IFoo = resolve(token);
         });
         it('stringify token', () => {
@@ -52,7 +52,7 @@ describe('Resolver', () => {
 
         it('get value by token', () => {
             const value: number | undefined = resolver.get(someToken1);
-            // @ts-expect-error
+            // @ts-expect-error check for valid types
             const value2: string = resolver.get(someToken1);
 
             expect(value).toEqual(5);
