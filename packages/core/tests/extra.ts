@@ -8,6 +8,7 @@ describe('extra atom', () => {
     const targetFoo = declareAtom<{ foo: string, start: number }>(
         'foo',
         {foo: '', start: 0},
+    )(
         on => [
             on(setStartAndEnd, (state, {start}) => ({
                 ...state,
@@ -19,6 +20,7 @@ describe('extra atom', () => {
     const targetBar = declareAtom<{ bar: string, end: number }>(
         'bar',
         {bar: '', end: 0},
+    )(
         on => [
             on(setStartAndEnd, (state, {end}) => ({
                 ...state,

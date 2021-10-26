@@ -64,7 +64,7 @@ describe('actions', () => {
         const atom = declareAtom(
             'atom',
             {value: 0, action: ''},
-            on => [],
+        )(
             {
                 setValue(_, value: number) {
                     return {
