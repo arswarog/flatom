@@ -25,17 +25,17 @@
     "/dist"
   ],
   "scripts": {
-    "prepublishOnly": "npm run rebuild",
-    "postpublish": "npm run clean",
+    "prepublishOnly": "yarn run rebuild",
+    "postpublish": "yarn run clean",
     "dev": "cross-env fixme=fixme ../../node_modules/.bin/microbundle watch --external=react,@flatom/core",
     "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --external=react,@flatom/core",
     "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf dist/",
-    "rebuild": "npm run clean && npm run build",
-    "bench": "npm run rebuild && npm run bench:now && npm run clean",
+    "rebuild": "yarn run clean && yarn run build",
+    "bench": "yarn run rebuild && yarn run bench:now && yarn run clean",
     "bench:now": "cross-env fixme=fixme ../../node_modules/.bin/ts-node -P benchmark/tsconfig.json benchmark",
     "show-perf": "node ./tools/showPerfResults",
     "ts-check": "cross-env fixme=fixme ../../node_modules/.bin/tsc --noEmit",
-    "ts-check:watch": "npm run ts-check -- --watch",
+    "ts-check:watch": "yarn run ts-check -- --watch",
     "update": "npx npm-check-updates -u",
     "presize": "yarn run rebuild",
     "size": "size-limit"
