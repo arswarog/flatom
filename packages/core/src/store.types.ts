@@ -1,5 +1,5 @@
 import { Atom, AtomName } from './atom.types';
-import { ActionCreator, Action, PayloadActionCreator } from './action.types';
+import { ActionCreator, Action, PayloadActionCreator, PayloadlessActionCreator } from './action.types';
 import { Subscription } from './common';
 import { Resolver } from './resolver.types';
 
@@ -16,7 +16,7 @@ export interface ReadonlyStore {
 
     subscribe(cb: DispatchSubscription): Subscription;
 
-    subscribe(action: ActionCreator, cb: () => void): Subscription;
+    subscribe(action: ActionCreator | PayloadlessActionCreator, cb: () => void): Subscription;
 
     subscribe<T = unknown>(
         target: Atom<T> | ActionCreator | PayloadActionCreator<T>,

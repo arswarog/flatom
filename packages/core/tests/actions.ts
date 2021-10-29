@@ -48,7 +48,16 @@ describe('actions', () => {
                 value: 10,
             });
         });
+        test('auto generating action name', () => {
+            expect(uniqName()).toBe('action 1');
+        });
+        test('auto generating action name', () => {
+            const setNum = declareAction<{ value: number }>(uniqName());
+
+            expect(setNum.type).toBe('action 1');
+        });
         test('types', () => {
+            // @ts-expect-error first param must be a string
             const ac = declareAction<string>(() => 1);
         });
     });

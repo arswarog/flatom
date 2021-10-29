@@ -1,4 +1,4 @@
-import { AnyAction, createStore, declareAction, declareAtom, declareEffect, resetUniqId, Store } from './index';
+import { Action, createStore, declareAction, declareAtom, declareEffect, Store } from './index';
 import { delay, wait } from './utils';
 
 describe('Store', () => {
@@ -54,7 +54,7 @@ describe('Store', () => {
             test('should receives every action', async () => {
                 const store = createStore();
 
-                const actions: AnyAction[] = [];
+                const actions: Action[] = [];
                 store.subscribe((action) => actions.push(action));
 
                 await store.dispatch(setValue({ value: 5 }));
@@ -69,8 +69,8 @@ describe('Store', () => {
                 ]);
             });
         });
-        describe.skip('for atom', () => null);
-        describe.skip('for action', () => null);
+        describe.skip('for atom', () => void 0);
+        describe.skip('for action', () => void 0);
     });
 
     describe('getState', () => {
@@ -124,7 +124,6 @@ describe('Store', () => {
             const store = createStore();
 
             const cb: () => void = jest.fn();
-            const g = atom.a.inc;
             store.subscribe(atom.a.inc, cb);
 
             await store.dispatch(atom.a.inc());
@@ -324,8 +323,8 @@ describe('Store', () => {
             });
         });
 
-        describe.skip('error in reactions', () => null);
-        describe.skip('error in subscribers', () => null);
+        describe.skip('error in reactions', () => void 0);
+        describe.skip('error in subscribers', () => void 0);
     });
     describe('atoms', () => {
         test('single atom', () => {
