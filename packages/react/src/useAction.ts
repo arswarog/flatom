@@ -1,27 +1,27 @@
-import { Action, ActionCreator, PayloadAction, PayloadActionCreator, SimpleAction } from '@flatom/core';
+import { Action, ActionCreator, PayloadActionCreator } from '@flatom/core';
 import { useCallback, useContext } from 'react';
 import { context } from './storeContext';
 
-export function useAction(cb: ActionCreator, deps?: any[]): () => void;
-export function useAction<T>(cb: PayloadActionCreator<T>, deps?: any[]): (payload: T) => void;
-export function useAction(cb: () => Action, deps?: any[]): () => void;
-export function useAction<ARG1>(cb: (arg1: ARG1) => Action, deps?: any[]): (arg1: ARG1) => void;
+export function useAction(cb: ActionCreator, deps?: any[]): () => Promise<any>;
+export function useAction<T>(cb: PayloadActionCreator<T>, deps?: any[]): (payload: T) => Promise<any>;
+export function useAction(cb: () => Action, deps?: any[]): () => Promise<any>;
+export function useAction<ARG1>(cb: (arg1: ARG1) => Action, deps?: any[]): (arg1: ARG1) => Promise<any>;
 export function useAction<ARG1, ARG2>(
     cb: (arg1: ARG1, arg2: ARG2) => Action,
     deps?: any[],
-): (arg1: ARG1, arg2: ARG2) => void;
+): (arg1: ARG1, arg2: ARG2) => Promise<any>;
 export function useAction<ARG1, ARG2, ARG3>(
     cb: (arg1: ARG1, arg2: ARG2, arg3: ARG3) => Action,
     deps?: any[],
-): (arg1: ARG1, arg2: ARG2, arg3: ARG3) => void;
+): (arg1: ARG1, arg2: ARG2, arg3: ARG3) => Promise<any>;
 export function useAction<ARG1, ARG2, ARG3, ARG4>(
     cb: (arg1: ARG1, arg2: ARG2, arg3: ARG3, arg4: ARG4) => Action,
     deps?: any[],
-): (arg1: ARG1, arg2: ARG2, arg3: ARG3, arg4: ARG4) => void;
+): (arg1: ARG1, arg2: ARG2, arg3: ARG3, arg4: ARG4) => Promise<any>;
 export function useAction<ARG1, ARG2, ARG3, ARG4, ARG5>(
     cb: (arg1: ARG1, arg2: ARG2, arg3: ARG3, arg4: ARG4, arg5: ARG5) => Action,
     deps?: any[],
-): (arg1: ARG1, arg2: ARG2, arg3: ARG3, arg4: ARG4, arg5: ARG5) => void;
+): (arg1: ARG1, arg2: ARG2, arg3: ARG3, arg4: ARG4, arg5: ARG5) => Promise<any>;
 export function useAction(cb: (...args: any[]) => Action, deps: any[] = []) {
     const store = useContext(context);
 
@@ -30,6 +30,6 @@ export function useAction(cb: (...args: any[]) => Action, deps: any[] = []) {
 
     return useCallback((params) => {
         const action = cb(params);
-        if (action) store.dispatch(action);
+        return action ? store.dispatch(action) : Promise.reject();
     }, deps.concat(store));
 }
