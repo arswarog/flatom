@@ -1,5 +1,6 @@
-import { declareAction } from './declare-action';
+import { declareAction, declareEffect } from './declare-action';
 import { Action, PayloadAction, SimpleAction } from './action.types';
+import { createStore } from './store';
 
 describe('declareAction', () => {
     describe('types', () => {
@@ -29,6 +30,16 @@ describe('declareAction', () => {
                 // @ts-expect-error check for valid types
                 payload: '5',
             };
+        });
+        it('dispatch declareEffect', async () => {
+            const effect = declareEffect('effect', ({}, payload: string) => 5);
+            const store = createStore();
+
+            const action = effect('123');
+
+            const result1: number = await store.dispatch(action);
+            // @ts-expect-error check for invalid types
+            const result2: string = await store.dispatch(action);
         });
     });
     describe('declareAction', () => {
@@ -70,6 +81,26 @@ describe('declareAction', () => {
             const action3: PayloadAction<number> = ac(5);
             //@ts-expect-error check for valid types
             const action4: PayloadAction<string, boolean> = ac('5');
+        });
+        it('dispatch PayloadAction', async () => {
+            const effect = declareAction<string>('effect');
+            const store = createStore();
+
+            const action = effect('123');
+
+            const result1: void = await store.dispatch(action);
+            // @ts-expect-error check for invalid types
+            const result2: string = await store.dispatch(action);
+        });
+        it('dispatch Action', async () => {
+            const effect = declareAction('effect');
+            const store = createStore();
+
+            const action = effect();
+
+            const result1: void = await store.dispatch(action);
+            // @ts-expect-error check for invalid types
+            const result2: string = await store.dispatch(action);
         });
     });
 });

@@ -1,5 +1,5 @@
 import { Atom, AtomName } from './atom.types';
-import { ActionCreator, Action, PayloadActionCreator, PayloadlessActionCreator } from './action.types';
+import { ActionCreator, Action, PayloadActionCreator, PayloadlessActionCreator, PayloadAction } from './action.types';
 import { Subscription } from './common';
 import { Resolver } from './resolver.types';
 
@@ -31,7 +31,8 @@ export interface Store extends ReadonlyStore {
 
     setState(newState: Record<AtomName, any>, actionType?: string): Record<AtomName, any>;
 
-    dispatch(action: Action): Promise<any>;
+    dispatch<T extends PayloadAction<any, any>>(action: T): Promise<ResultOfPayloadAction<T>>;
+    dispatch(action: Action): Promise<void>;
 
     onGarbageCollected(cb: () => void): Subscription;
 
@@ -45,3 +46,5 @@ interface DebugAPI {
 export interface FlatomConfig {
     trace?: boolean;
 }
+
+type ResultOfPayloadAction<T extends PayloadAction<any, any>> = T extends PayloadAction<any, infer R> ? R : void;
