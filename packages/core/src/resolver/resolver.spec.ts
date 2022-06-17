@@ -1,5 +1,6 @@
-import { createToken, Resolver, Token } from './resolver.types';
 import { createResolver } from './resolver';
+import { createToken, Token } from './token';
+import { Resolver } from './resolver.types';
 
 describe('Resolver', () => {
     describe('Token', () => {

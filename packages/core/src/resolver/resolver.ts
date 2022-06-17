@@ -1,4 +1,5 @@
-import { Resolver, Token } from './resolver.types';
+import { Resolver } from './resolver.types';
+import { Token } from './token';
 
 export function createResolver(): Resolver {
     const valueMap = new Map<Token<unknown>, unknown>();
