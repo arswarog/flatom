@@ -7,7 +7,7 @@ import { createResolver } from './resolver';
 import { AtomStore, AtomToken } from './atom-store';
 
 export function createStore(initialState: Record<AtomName, any> = {}, config: FlatomConfig = {}): Store {
-    const trace = config.trace ? (msg) => console.log('[flatom] ' + msg) : (msg) => null;
+    const trace = config.trace ? (msg) => console.log('[flatom/core] ' + msg) : (msg) => null;
 
     const atomStore = new AtomStore();
 
@@ -216,7 +216,7 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
 
         const atomState = state[atom.key] || atom(undefined, { type: '' });
 
-        if (selector && typeof selector !== 'function') throw new TypeError('[flatom] Invalid selector');
+        if (selector && typeof selector !== 'function') throw new TypeError('[flatom/core] Invalid selector');
 
         return selector ? selector(atomState) : atomState;
     }

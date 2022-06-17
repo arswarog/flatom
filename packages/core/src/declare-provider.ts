@@ -18,7 +18,7 @@ export function declareProvider<TValue>(
 ): ValueProvider<TValue> {
     if (typeof key === 'function') return declareProvider<TValue>('factory ' + increment++, key);
 
-    if (typeof factory !== 'function') throw new Error(`[flatom] Invalid factory`);
+    if (typeof factory !== 'function') throw new Error(`[flatom/core] Invalid provider factory`);
 
     return {
         key,
@@ -27,7 +27,7 @@ export function declareProvider<TValue>(
 }
 
 function checkProviders(deps: any[]): deps is ValueProvider<any>[] {
-    if (deps.some((dep) => !isValueProvider(dep))) throw new Error(`[flatom] Invalid dependency`);
+    if (deps.some((dep) => !isValueProvider(dep))) throw new Error(`[flatom/core] Invalid dependency`);
     return true;
 }
 
