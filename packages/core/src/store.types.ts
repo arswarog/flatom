@@ -1,7 +1,7 @@
 import { Atom, AtomName } from './atom.types';
 import { ActionCreator, Action, PayloadActionCreator, PayloadlessActionCreator, PayloadAction } from './action.types';
 import { Subscription } from './common';
-import { Resolver } from './resolver.types';
+import { Resolver } from './resolver';
 
 export type State = Record<string | symbol, any>;
 export type StateSubscription = (state: Record<AtomName, any>, action: Action) => void;

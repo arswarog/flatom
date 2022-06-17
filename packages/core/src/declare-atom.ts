@@ -73,7 +73,6 @@ export function declareAtom<TState>(atomName: AtomName | (string | number)[], in
         atom.relatedAtoms = relatedAtoms;
         atom.discoveredActions = discoveredActions;
         atom.hasOtherReducer = !!otherReducer;
-        atom.getValue = (store: Store) => store.getState(atom);
 
         const actionsMap = {} as ActionCreators<TActions>;
 

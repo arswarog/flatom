@@ -7,7 +7,6 @@ export function createResolver(): Resolver {
         get: getService,
         unset: unsetValue,
         clear,
-        getMany: getManyServices as any,
     };
 
     function clear() {
@@ -26,14 +25,6 @@ export function createResolver(): Resolver {
         if (valueMap.has(token)) return valueMap.get(token) as T;
         if (allowFail) return undefined;
         else throw new Error();
-    }
-
-    function getManyServices(tokens: Token<any[]>): any[] {
-        return [];
-        // if (providers !== lastResolvedDepsProviders)
-        //     lastResolvedDepsValue = providers.map(provider => provider.getValue(store)) as any;
-        // lastResolvedDepsProviders = providers;
-        // return lastResolvedDepsValue;
     }
 
     return resolver;
