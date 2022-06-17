@@ -1,9 +1,8 @@
-import { ValueProvider } from './provider.types';
 import { Action, PayloadActionCreator, PayloadlessActionCreator } from './action.types';
 
 export type AtomName = string;
 
-export interface Atom<TState> extends ValueProvider<TState> {
+export interface Atom<TState> {
     readonly key: AtomName;
 
     readonly relatedAtoms: ReadonlyArray<Atom<any>>;
