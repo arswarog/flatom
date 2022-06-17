@@ -25,8 +25,8 @@ export function useAction<ARG1, ARG2, ARG3, ARG4, ARG5>(
 export function useAction(cb: (...args: any[]) => Action, deps: any[] = []) {
     const store = useContext(context);
 
-    if (!store) throw new Error('[flatom] The store provider is not defined');
-    if (typeof cb !== 'function') throw new TypeError('[flatom] Invalid action creator');
+    if (!store) throw new Error('[flatom/react] The store provider is not defined');
+    if (typeof cb !== 'function') throw new TypeError('[flatom/react] Invalid action creator');
 
     return useCallback((params) => {
         const action = cb(params);

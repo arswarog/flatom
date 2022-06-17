@@ -8,7 +8,7 @@ export function useAtom(atom: Atom<any>, selector?: (value: any) => any, deps?: 
     const subscription = useRef<Subscription>();
     const store: Store | null = useContext(context);
 
-    if (!store) throw new Error('[flatom] The store provider is not defined');
+    if (!store) throw new Error('[flatom/react] The store provider is not defined');
 
     const state = store.getState(atom, selector);
     const [_, setState] = useState(state);
