@@ -9,6 +9,7 @@ import { AtomStore, AtomToken } from './atom-store';
 export function createStore(initialState: Record<AtomName, any> = {}, config: FlatomConfig = {}): Store {
     const trace = config.trace ? (msg) => console.log('[flatom/core] ' + msg) : (msg) => null;
 
+    const uninitializedAtomsCache = new Map<AtomName, unknown>();
     const atomStore = new AtomStore();
 
     let state: Record<AtomName, any> = initialState;
@@ -89,6 +90,7 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
                     target.relatedAtoms.map((rel) => subscribe(rel, () => null)),
                 );
                 atoms.push(token);
+                uninitializedAtomsCache.delete(target.key);
                 const relatedAtoms = target.relatedAtoms || [];
                 state[target.key] = relatedAtoms.reduce(
                     (state, atom) => target(state, { type: atom, payload: getState(atom) }),
@@ -216,7 +218,15 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
     function getState(atom?: Atom<any>, selector?: (state: any) => any): any {
         if (!atom) return state;
 
-        const atomState = state[atom.key] || atom(undefined, { type: '' });
+        let atomState = state[atom.key];
+
+        if (atomState == void 0) {
+            atomState = uninitializedAtomsCache.get(atom.key);
+            if (atomState == void 0) {
+                atomState = atom(undefined, { type: '' });
+                uninitializedAtomsCache.set(atom.key, atomState);
+            }
+        }
 
         if (selector && typeof selector !== 'function') throw new TypeError('[flatom/core] Invalid selector');
 
