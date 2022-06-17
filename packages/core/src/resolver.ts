@@ -4,10 +4,10 @@ export function createResolver(): Resolver {
     const valueMap = new Map<Token<unknown>, unknown>();
     const resolver: Resolver = {
         set: setValue,
-        get: resolve,
+        get: getService,
         unset: unsetValue,
         clear,
-        getMany: resolveMany as any,
+        getMany: getManyServices as any,
     };
 
     function clear() {
@@ -22,13 +22,13 @@ export function createResolver(): Resolver {
         valueMap.delete(token);
     }
 
-    function resolve<T>(token: Token<T>, allowFail = false): T | undefined {
+    function getService<T>(token: Token<T>, allowFail = false): T | undefined {
         if (valueMap.has(token)) return valueMap.get(token) as T;
         if (allowFail) return undefined;
         else throw new Error();
     }
 
-    function resolveMany(tokens: Token<any[]>): any[] {
+    function getManyServices(tokens: Token<any[]>): any[] {
         return [];
         // if (providers !== lastResolvedDepsProviders)
         //     lastResolvedDepsValue = providers.map(provider => provider.getValue(store)) as any;

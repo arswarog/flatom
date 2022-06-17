@@ -23,7 +23,7 @@ export interface ReadonlyStore {
         cb: (payload: T) => void,
     ): Subscription;
 
-    resolve: Resolver['get'];
+    getService: Resolver['get'];
 }
 
 export interface Store extends ReadonlyStore {
