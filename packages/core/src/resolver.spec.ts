@@ -11,7 +11,7 @@ describe('Resolver', () => {
             foo: number;
         }
 
-        function resolve<T>(token: Token<T>): T {
+        function getService<T>(token: Token<T>): T {
             return {} as any;
         }
 
@@ -20,18 +20,18 @@ describe('Resolver', () => {
             // @ts-expect-error check for valid types
             const token2: Token<IFoo> = createToken<IBar>('bar');
 
-            const value1: IFoo = resolve(token);
+            const value1: IFoo = getService(token);
             // @ts-expect-error check for valid types
-            const value2: IBar = resolve(token);
+            const value2: IBar = getService(token);
         });
         it('token unuseful without type', () => {
             const token = createToken('foo');
 
-            const value1 = resolve(token);
+            const value1 = getService(token);
             // @ts-expect-error check for valid types
             value1.anyField;
             // @ts-expect-error check for valid types
-            const value2: IFoo = resolve(token);
+            const value2: IFoo = getService(token);
         });
         it('stringify token', () => {
             const token = createToken('foo');

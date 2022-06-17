@@ -36,13 +36,13 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
     const gcSubscriptions = new Set<Unsubscribe>();
     let gc: AtomToken[] | null = null;
 
+    const resolver = createResolver();
+
     const readonlyStore: ReadonlyStore = {
         getState,
         subscribe,
-        resolve: null as any,
+        getService: resolver.get,
     };
-    const resolver = createResolver();
-    readonlyStore.resolve = resolver.get;
 
     const debugAPI = {
         onStateChanged,
@@ -52,12 +52,14 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
         subscribe,
         dispatch,
         getState,
-        resolve: resolver.get,
+        getService: resolver.get,
         setState,
         onGarbageCollected,
         resolver,
         debugAPI,
     };
+
+    return store;
 
     function onStateChanged(cb: StateSubscription): Subscription {
         immediateSubscriptions.add(cb);
@@ -241,6 +243,4 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
         gcSubscriptions.add(cb);
         return createSubscription(() => gcSubscriptions.delete(cb));
     }
-
-    return store;
 }
