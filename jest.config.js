@@ -71,7 +71,7 @@ module.exports = {
     // ],
 
     // An array of file extensions your modules use
-    moduleFileExtensions: ['js', 'json', 'jsx', 'ts', 'tsx', 'node'],
+    moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'node', 'json'],
 
     // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
     // moduleNameMapper: {},
@@ -179,4 +179,6 @@ module.exports = {
 
     // Whether to use watchman for file crawling
     // watchman: true,
+
+    preset: 'ts-jest',
 };

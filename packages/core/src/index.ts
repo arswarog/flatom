@@ -8,3 +8,4 @@ export * from './declare-atom';
 export * from './store';
 export * from './store.types';
 export * from './resolver';
+export * from './extra';
