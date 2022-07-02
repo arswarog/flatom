@@ -1,0 +1,65 @@
+{
+  "name": "@flatom/forms-react",
+  "version": "0.0.0-stub",
+  "description": "Create forms for react",
+  "keywords": [
+    "flatom",
+    "forms",
+    "final-forms"
+  ],
+  "author": "Evgeny <arswarog@yandex.ru>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "umd:main": "dist/index.umd.js",
+  "module": "dist/index.es.js",
+  "unpkg": "dist/index.umd.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "directories": {
+    "lib": "src",
+    "test": "tests"
+  },
+  "files": [
+    "/README.md",
+    "/package.json",
+    "/dist"
+  ],
+  "scripts": {
+    "prepublishOnly": "yarn run rebuild",
+    "postpublish": "yarn run clean",
+    "dev": "cross-env fixme=fixme ../../node_modules/.bin/microbundle watch --external=@flatom/core --jsx React.createElement",
+    "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --external=@flatom/core --jsx React.createElement",
+    "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf build/",
+    "rebuild": "yarn run clean && yarn run build",
+    "bench": "yarn run rebuild && yarn run bench:now && yarn run clean",
+    "bench:now": "cross-env fixme=fixme ../../node_modules/.bin/ts-node -P benchmark/tsconfig.json benchmark",
+    "show-perf": "node ./tools/showPerfResults",
+    "ts-check": "cross-env fixme=fixme ../../node_modules/.bin/tsc --noEmit",
+    "ts-check:watch": "yarn run ts-check -- --watch",
+    "update": "npx npm-check-updates -u",
+    "presize": "yarn run rebuild",
+    "size": "size-limit"
+  },
+  "size-limit": [
+    {
+      "limit": "5 KB",
+      "path": "dist/*.js"
+    }
+  ],
+  "dependencies": {
+    "use-sync-external-store": "^1.2.0"
+  },
+  "peerDependencies": {
+    "@flatom/core": "^0.0.0-stub",
+    "@flatom/react": "^0.0.0-stub",
+    "@flatom/forms": "^0.0.0-stub"
+  },
+  "devDependencies": {
+    "@flatom/core": "^0.0.0-stub",
+    "@flatom/react": "^0.0.0-stub",
+    "@flatom/forms": "^0.0.0-stub",
+    "cross-env": "^7.0.3",
+    "size-limit": "^4.10.1"
+  }
+}
