@@ -108,6 +108,21 @@ describe('Store', () => {
                     },
                 );
             });
+            test('should throw error then store meets to different atoms with one key', () => {
+                function atomFactory() {
+                    return declareAtom('test')({});
+                }
+                const store = createStore();
+
+                const atom1 = atomFactory();
+                const atom2 = atomFactory();
+
+                // act
+                store.subscribe(atom1, () => null);
+                expect(() => store.subscribe(atom2, () => null)).toThrow(
+                    'Conflict: two different atom can not have same key "test"',
+                );
+            });
         });
         describe.skip('for action', () => void 0);
     });

@@ -86,6 +86,12 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
 
             if (isAtom(target)) {
                 const token = atomStore.get(target);
+                const stateKey = token.stateKey;
+
+                if (atoms.some((atom) => atom.stateKey === stateKey)) {
+                    throw new Error(`Conflict: two different atom can not have same key "${stateKey}"`);
+                }
+
                 innerSubscriptions.set(
                     token,
                     target.relatedAtoms.map((rel) => subscribe(rel, () => null)),
