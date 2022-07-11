@@ -54,22 +54,61 @@ describe('Store', () => {
             test('should receives every action', async () => {
                 const store = createStore();
 
-                const actions: Action[] = [];
-                store.subscribe((action) => actions.push(action));
+                const spy = jest.fn();
+                store.subscribe(spy);
 
                 await store.dispatch(setValue({ value: 5 }));
 
-                expect(actions).toEqual([
-                    {
-                        type: setValue.type,
-                        payload: {
-                            value: 5,
-                        },
+                expect(spy).toBeCalledTimes(1);
+                expect(spy).toBeCalledWith({
+                    type: setValue.type,
+                    payload: {
+                        value: 5,
                     },
-                ]);
+                });
             });
         });
-        describe.skip('for atom', () => void 0);
+        describe('for atom', () => {
+            test('should get every changes of atom', async () => {
+                // arranged
+                const store = createStore();
+
+                const spy = jest.fn();
+                store.subscribe(atom, spy);
+
+                // act 1
+                await store.dispatch(setValue({ value: 5 }));
+
+                // assert 1
+                expect(spy).toBeCalledTimes(1);
+                expect(spy).toBeCalledWith(
+                    {
+                        action: 'setValue',
+                        value: 5,
+                    },
+                    {
+                        action: '',
+                        value: 0,
+                    },
+                );
+
+                // act 2
+                await store.dispatch(setValue({ value: 15 }));
+
+                // assert 2
+                expect(spy).toBeCalledTimes(2);
+                expect(spy).toBeCalledWith(
+                    {
+                        action: 'setValue',
+                        value: 15,
+                    },
+                    {
+                        action: 'setValue',
+                        value: 5,
+                    },
+                );
+            });
+        });
         describe.skip('for action', () => void 0);
     });
 

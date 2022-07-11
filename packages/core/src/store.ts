@@ -12,6 +12,7 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
     const uninitializedAtomsCache = new Map<AtomName, unknown>();
     const atomStore = new AtomStore();
 
+    let prevState: Record<AtomName, any> = {};
     let state: Record<AtomName, any> = initialState;
     let atoms: AtomToken[] = [];
     const changedAtoms = new Set<AtomToken>();
@@ -30,7 +31,7 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
     /**
      * List of targeted subscriptions
      */
-    const subscriptions = new Map<any, ((payload: any) => void)[]>();
+    const subscriptions = new Map<any, ((payload: any, prev?: any) => void)[]>();
     /**
      * List of GC subscriptions
      */
@@ -68,10 +69,10 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
     }
 
     function subscribe(cb: DispatchSubscription): Subscription;
-    function subscribe(target: Atom<any> | ActionCreator<any>, cb: (payload?: any) => void): Subscription;
+    function subscribe(target: Atom<any> | ActionCreator<any>, cb: (payload?: any, prev?: any) => void): Subscription;
     function subscribe(
         target: Atom<any> | ActionCreator<any> | DispatchSubscription,
-        cb?: (payload?: any) => void,
+        cb?: (payload?: any, prev?: any) => void,
     ): Subscription {
         if (cb === void 0) {
             dispatchSubscriptions.add(target as DispatchSubscription);
@@ -165,6 +166,7 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
         });
 
         if (isStateChanged) {
+            prevState = state;
             state = newState;
         }
 
@@ -205,10 +207,13 @@ export function createStore(initialState: Record<AtomName, any> = {}, config: Fl
         // atom subscriptions
         changedAtoms.forEach((token) => {
             const cbList = subscriptions.get(token);
+
             if (!cbList) return;
 
             const atomState = state[token.stateKey];
-            cbList.forEach((cb) => cb && cb(atomState));
+            const prevAtomState = prevState[token.stateKey];
+
+            cbList.forEach((cb) => cb && cb(atomState, prevAtomState));
         });
 
         changedAtoms.clear();

@@ -20,7 +20,7 @@ export interface ReadonlyStore {
 
     subscribe<T = unknown>(
         target: Atom<T> | ActionCreator | PayloadActionCreator<T>,
-        cb: (payload: T) => void,
+        cb: (payload: T, prev: T) => void,
     ): Subscription;
 
     getService: Resolver['get'];
