@@ -10,8 +10,9 @@
     "outDir": "lib",
     "noImplicitAny": false,
     "lib": [
+      "dom",
       "es2015"
-    ],
+    ]
   },
   "include": [
     "packages/core/src/**/*"
