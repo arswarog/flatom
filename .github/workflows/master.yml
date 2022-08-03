@@ -4,7 +4,6 @@ on:
     push:
         branches:
             - 'master'
-            - 'pvm'
 
 env:
     PVM_LL: silly

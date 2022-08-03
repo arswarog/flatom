@@ -1,10 +1,10 @@
 # @flatom/react
 
-React bindings package for [Flatom](https://github.com/arswarog/flatom) store.
+Package for debugging [Flatom](https://github.com/arswarog/flatom) via Redux DevTools.
 
-[![npm](https://img.shields.io/npm/v/@flatom/react?style=flat-square)](https://www.npmjs.com/package/@flatom/react)
-![npm type definitions](https://img.shields.io/npm/types/@flatom/react?style=flat-square)
-[![npm bundle size](https://img.shields.io/bundlephobia/minzip/@flatom/react?style=flat-square)](https://bundlephobia.com/result?p=@flatom/react)
+[![npm](https://img.shields.io/npm/v/@flatom/debug?style=flat-square)](https://www.npmjs.com/package/@flatom/debug)
+![npm type definitions](https://img.shields.io/npm/types/@flatom/debug?style=flat-square)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/@flatom/debug?style=flat-square)](https://bundlephobia.com/result?p=@flatom/debug)
 ![GitHub](https://img.shields.io/github/license/arswarog/flatom?style=flat-square)
 
 ## Install
@@ -19,46 +19,12 @@ or
 
 ## Usage
 
-### Step 1. Create store
+### Step 1. Connect to redux dev tools
 
 ```tsx
-// App
-import React from 'react'
 import { createStore } from '@flatom/core'
+import { connectReduxDevtools } from '@flatom/debug'
 
 const store = createStore();
-```
-
-### Step 2. Use debug
-
-```tsx
-// components/Form
-
-
-
 connectReduxDevtools(store);
-
-import { declareAction, declareAtom } from '@flatom/core'
-import { useAction, useAtom } from '@flatom/react'
-
-const changeName = declareAction();
-const nameAtom = declareAtom<string>(
-    'name',
-    '',
-    on => [
-        on(changeName, (state, payload) => payload),
-    ],
-);
-
-export const Form = () => {
-    const name = useAtom(nameAtom);
-    const handleChangeName = useAction(e => changeName(e.target.value));
-
-    return (
-        <form>
-            <label htmlFor="name">Enter your name</label>
-            <input id="name" value={name} onChange={handleChangeName}/>
-        </form>
-    );
-}
 ```
