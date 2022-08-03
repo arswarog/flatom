@@ -1,6 +1,6 @@
 {
   "name": "@flatom/debug",
-  "version": "0.7.0",
+  "version": "0.0.0-stub",
   "description": "Connection to Redux dev tools",
   "keywords": [
     "State",
@@ -49,11 +49,11 @@
     }
   ],
   "peerDependencies": {
-    "@flatom/core": "^0.1.0",
+    "@flatom/core": "^0.0.0-stub",
     "react": "^16.0.0"
   },
   "devDependencies": {
-    "@flatom/core": "^0.7.0",
+    "@flatom/core": "^0.0.0-stub",
     "cross-env": "^7.0.3",
     "redux-devtools-extension": "^2.13.9",
     "size-limit": "^4.10.1"
