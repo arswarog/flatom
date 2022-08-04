@@ -1,6 +1,10 @@
 [update]
 dependants_release_type = 'as-dep'
 default_release_type = 'patch'
+include_root = false
+
+[publish]
+include_monorepo_root = false
 
 [versioning]
 unified = true
