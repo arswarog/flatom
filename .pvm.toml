@@ -2,6 +2,9 @@
 dependants_release_type = 'as-dep'
 default_release_type = 'patch'
 
+[publish]
+include_monorepo_root = true
+
 [versioning]
 unified = true
 source = 'tag'
