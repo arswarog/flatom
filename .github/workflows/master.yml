@@ -65,6 +65,10 @@ jobs:
 
             -   run: yarn build
 
-            -   run: yarn pvm update
+            -   run: yarn pvm local update
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+            -   run: git push --tags
                 env:
                     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
