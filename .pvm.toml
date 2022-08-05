@@ -1,10 +1,16 @@
+[core]
+deps_keys = [ 'dependencies', 'devDependencies', 'peerDependencies' ]
+
 [update]
+commit_via_platform = false
 dependants_release_type = 'as-dep'
 default_release_type = 'patch'
 include_root = false
 
 [publish]
 include_monorepo_root = false
+registry = 'https://registry.npmjs.org'
+cli_args = '--access public'
 
 [versioning]
 unified = true
