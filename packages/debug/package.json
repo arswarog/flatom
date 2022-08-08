@@ -1,6 +1,6 @@
 {
   "name": "@flatom/debug",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Connection to Redux dev tools",
   "keywords": [
     "State",
@@ -53,7 +53,7 @@
     "react": "^16.0.0"
   },
   "devDependencies": {
-    "@flatom/core": "^0.6.0",
+    "@flatom/core": "^0.7.0",
     "cross-env": "^7.0.3",
     "redux-devtools-extension": "^2.13.9",
     "size-limit": "^4.10.1"
