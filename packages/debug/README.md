@@ -25,27 +25,18 @@ or
 // App
 import React from 'react'
 import { createStore } from '@flatom/core'
-import { StoreProvider } from '@flatom/react'
-import { Form } from './components/Form'
 
-export const App = () => {
-    // create statefull context for atoms execution
-    const store = createStore();
-
-    return (
-        <div className="App">
-            <StoreProvider value={store}>
-                <Form/>
-            </StoreProvider>
-        </div>
-    );
-}
+const store = createStore();
 ```
 
 ### Step 2. Use debug
 
 ```tsx
 // components/Form
+
+
+
+connectReduxDevtools(store);
 
 import { declareAction, declareAtom } from '@flatom/core'
 import { useAction, useAtom } from '@flatom/react'
