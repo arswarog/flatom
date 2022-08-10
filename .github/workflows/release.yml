@@ -37,9 +37,12 @@ jobs:
                         */*/node_modules
                     key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
 
-            - run: yarn build
+            -   name: Install
+                run: yarn install
 
-            - run: yarn pvm publish
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+            -   run: yarn build
+
+            -   run: yarn pvm publish
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

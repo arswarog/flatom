@@ -16,9 +16,6 @@ cli_args = '--access public'
 unified = true
 source = 'tag'
 
-[tagging]
-release_tag_package = '@flatom/core'
-
 [release]
 tag_only = true
 
