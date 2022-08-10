@@ -9,13 +9,13 @@ React bindings package for [Flatom](https://github.com/arswarog/flatom) store.
 
 ## Install
 
-`npm i @flatom/react`
+`npm i @flatom/debug`
 
 or
 
-`yarn add @flatom/react`
+`yarn add @flatom/debug`
 
-> `@flatom/react` depends on `@flatom/core`.
+> `@flatom/debug` depends on `@flatom/core`.
 
 ## Usage
 
