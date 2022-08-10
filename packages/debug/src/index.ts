@@ -26,7 +26,7 @@ export function connectReduxDevtools(store: Store) {
             persist: true,
             export: true,
             import: 'custom',
-            jump: false,
+            jump: true,
             skip: false,
             reorder: false,
             dispatch: false,
