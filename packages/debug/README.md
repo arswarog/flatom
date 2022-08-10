@@ -42,7 +42,7 @@ export const App = () => {
 }
 ```
 
-### Step 2. Use in components
+### Step 2. Use debug
 
 ```tsx
 // components/Form
