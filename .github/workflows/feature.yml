@@ -4,107 +4,51 @@ name: Check feature
 
 # Controls when the action will run.
 on:
-    pull_request:
-        types:
-            - opened
-            - reopened
-            - synchronize
-            - ready_for_review
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
 
 jobs:
-    prepare:
-        runs-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-latest
 
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+          ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
-            -   name: Setup node
-                uses: actions/setup-node@v2
-                with:
-                    node-version: '16'
+      - uses: ./.github/actions/prepare
 
-            -   name: Cache node modules
-                uses: actions/cache@v2
-                env:
-                    cache-name: cache-node-modules
-                with:
-                    path: |
-                        node_modules
-                        */*/node_modules
-                    key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+      - name: Lint
+        run: yarn run lint
 
-            -   name: Install
-                run: yarn install
+      - name: Check
+        run: yarn run prettier:check
 
-    test:
-        runs-on: ubuntu-latest
+      - name: Build packages
+        run: yarn run build
 
-        needs:
-            - prepare
+      - name: Testing
+        run: yarn test
 
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v2
+  publish-info:
+    runs-on: ubuntu-latest
 
-            -   name: Setup node
-                uses: actions/setup-node@v2
-                with:
-                    node-version: '16'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+          ssh-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
-            -   name: Cache node modules
-                uses: actions/cache@v2
-                env:
-                    cache-name: cache-node-modules
-                with:
-                    path: |
-                        node_modules
-                        */*/node_modules
-                    key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+      - uses: ./.github/actions/prepare
 
-            -   name: Lint
-                run: yarn run lint
+      - run: yarn build
 
-            -   name: Check
-                run: yarn run prettier:check
-
-            -   name: Build packages
-                run: yarn run build
-
-            -   name: Testing
-                run: yarn test
-
-    publish-info:
-        runs-on: ubuntu-latest
-
-        needs:
-            - prepare
-
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v2
-                with:
-                    fetch-depth: 100
-                    ref: ${{ github.event.pull_request.head.sha }}
-
-            -   name: Setup node
-                uses: actions/setup-node@v2
-                with:
-                    node-version: '16'
-
-            -   name: Cache node modules
-                uses: actions/cache@v2
-                env:
-                    cache-name: cache-node-modules
-                with:
-                    path: |
-                        node_modules
-                        */*/node_modules
-                    key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
-
-            -   run: yarn build
-
-            -   name: Mark PR
-                run: yarn pvm mark-pr
-                env:
-                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Mark PR
+        run: yarn pvm mark-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

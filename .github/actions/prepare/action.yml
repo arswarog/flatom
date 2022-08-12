@@ -1,0 +1,22 @@
+name: 'Prepare'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup node
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Cache node modules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-node-modules
+      with:
+        path: |
+          node_modules
+          */*/node_modules
+        key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+
+    - name: Install
+      shell: bash
+      run: yarn install
