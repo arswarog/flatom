@@ -11,7 +11,8 @@
     "noImplicitAny": false,
     "lib": [
       "dom",
-      "es2015"
+      "es2015",
+      "es2021"
     ]
   },
   "include": [
