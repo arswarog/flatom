@@ -1,14 +1,12 @@
 import { Atom, Store, Subscription } from '@flatom/core';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { context } from './storeContext';
+import { useEffect, useRef, useState } from 'react';
+import { useStore } from './useStore';
 
 export function useAtom<TAtom>(atom: Atom<TAtom>): TAtom;
 export function useAtom<TAtom, T>(atom: Atom<TAtom>, selector: (value: TAtom) => T, deps: any[]): T;
 export function useAtom(atom: Atom<any>, selector?: (value: any) => any, deps?: any[]): any {
     const subscription = useRef<Subscription>();
-    const store: Store | null = useContext(context);
-
-    if (!store) throw new Error('[flatom/react] The store provider is not defined');
+    const store = useStore();
 
     const state = store.getState(atom, selector);
     const [_, setState] = useState(state);
