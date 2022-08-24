@@ -1,6 +1,6 @@
 import { Action, ActionCreator, PayloadActionCreator } from '@flatom/core';
-import { useCallback, useContext } from 'react';
-import { context } from './storeContext';
+import { useCallback } from 'react';
+import { useStore } from './useStore';
 
 export function useAction(cb: ActionCreator, deps?: any[]): () => Promise<any>;
 export function useAction<T>(cb: PayloadActionCreator<T>, deps?: any[]): (payload: T) => Promise<any>;
@@ -23,9 +23,8 @@ export function useAction<ARG1, ARG2, ARG3, ARG4, ARG5>(
     deps?: any[],
 ): (arg1: ARG1, arg2: ARG2, arg3: ARG3, arg4: ARG4, arg5: ARG5) => Promise<any>;
 export function useAction(cb: (...args: any[]) => Action, deps: any[] = []) {
-    const store = useContext(context);
+    const store = useStore();
 
-    if (!store) throw new Error('[flatom/react] The store provider is not defined');
     if (typeof cb !== 'function') throw new TypeError('[flatom/react] Invalid action creator');
 
     return useCallback((params) => {
