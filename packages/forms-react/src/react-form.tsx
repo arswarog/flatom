@@ -1,14 +1,5 @@
 import * as React from 'react';
-import {
-    createContext,
-    FormHTMLAttributes,
-    ReactNode,
-    SyntheticEvent,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-} from 'react';
+import { createContext, FC, ReactNode, SyntheticEvent, useContext, useEffect, useRef, useState } from 'react';
 
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
@@ -37,7 +28,7 @@ export interface IFlatomFormProps<TValue = any> {
 
 export const FlatomFormContext = createContext<FormControl>(null as any);
 
-export function FlatomForm<TValue = any>({ form, ...props }: IFlatomFormProps<TValue>) {
+export const FlatomForm: FC = function FlatomForm<TValue = any>({ form, ...props }: IFlatomFormProps<TValue>) {
     const onSubmitHandler = (event: SyntheticEvent) => {
         event.preventDefault();
 
@@ -49,7 +40,7 @@ export function FlatomForm<TValue = any>({ form, ...props }: IFlatomFormProps<TV
             <form onSubmit={onSubmitHandler}>{props.children}</form>
         </FlatomFormContext.Provider>
     );
-}
+};
 
 export function useForm<TValue = any>(
     schema: FormControlSchema<TValue>,
