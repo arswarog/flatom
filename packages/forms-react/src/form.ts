@@ -10,6 +10,7 @@ export interface IFlatomFormProps<TValue = any> {
     form: FormControl<TValue>;
 
     onSubmit?: OnFormSubmit<TValue>;
+    onSubmitInvalid?: OnFormSubmit<TValue>;
 
     children?: ReactNode | undefined;
 }
@@ -21,7 +22,7 @@ export const FlatomForm: FunctionComponent<IFlatomFormProps<unknown>> = function
     const onSubmitHandler = (event: SyntheticEvent) => {
         event.preventDefault();
 
-        form.valid && props.onSubmit && props.onSubmit(form.value, form as any);
+        form.valid ? props.onSubmit?.(form.value, form as any) : props.onSubmitInvalid?.(form.value, form as any);
     };
 
     return React.createElement(
