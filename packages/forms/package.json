@@ -30,7 +30,7 @@
     "postpublish": "yarn run clean",
     "dev": "cross-env fixme=fixme ../../node_modules/.bin/microbundle watch --external=@flatom/core",
     "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --external=@flatom/core",
-    "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf build/",
+    "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf dist/",
     "rebuild": "yarn run clean && yarn run build",
     "bench": "yarn run rebuild && yarn run bench:now && yarn run clean",
     "bench:now": "cross-env fixme=fixme ../../node_modules/.bin/ts-node -P benchmark/tsconfig.json benchmark",
