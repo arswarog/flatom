@@ -28,5 +28,3 @@ import { connectReduxDevtools } from '@flatom/debug'
 const store = createStore();
 connectReduxDevtools(store);
 ```
-
-// pvm publish -s all --canary
