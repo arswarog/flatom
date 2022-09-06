@@ -15,10 +15,7 @@ export interface IFlatomFormProps<TValue = any> {
     children?: ReactNode | undefined;
 }
 
-export const FlatomForm: FunctionComponent<IFlatomFormProps<unknown>> = function FlatomForm<TValue = any>({
-    form,
-    ...props
-}: IFlatomFormProps<TValue>) {
+export function FlatomForm<TValue = any>({ form, ...props }: IFlatomFormProps<TValue>): JSX.Element {
     const onSubmitHandler = (event: SyntheticEvent) => {
         event.preventDefault();
 
@@ -30,4 +27,4 @@ export const FlatomForm: FunctionComponent<IFlatomFormProps<unknown>> = function
         { value: form },
         React.createElement('form', { onSubmit: onSubmitHandler }, props.children),
     );
-};
+}
