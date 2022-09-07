@@ -17,6 +17,7 @@
     "test": "jest --collect-coverage",
     "size": "lerna run size",
     "lint": "eslint --ext .ts,.tsx,.js,.jsx packages/",
+    "lint:fix": "yarn run lint --fix",
     "clean": "lerna run --parallel clean",
     "postclean": "rm -rf packages/*/node_modules packages/*/src/*.d.ts packages/*/src/**/*.d.ts",
     "prerebuild": "yarn run clean",
