@@ -1,4 +1,4 @@
-import { Atom, Store, Subscription } from '@flatom/core';
+import { Atom, Subscription } from '@flatom/core';
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from './useStore';
 
