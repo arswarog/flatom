@@ -13,6 +13,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap && lerna run rebuild",
     "dev": "lerna run --parallel dev",
+    "prebuild": "yarn run clean",
     "build": "lerna run build",
     "test": "jest --collect-coverage",
     "size": "lerna run size",
