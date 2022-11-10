@@ -27,8 +27,8 @@
   "scripts": {
     "prepublishOnly": "yarn run rebuild",
     "postpublish": "yarn run clean",
-    "dev": "cross-env fixme=fixme ../../node_modules/.bin/microbundle watch --external=react,@flatom/core",
-    "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --external=react,@flatom/core",
+    "dev": "cross-env fixme=fixme ../../node_modules/.bin/microbundle watch --external=react,@flatom/core,use-sync-external-store",
+    "build": "cross-env fixme=fixme ../../node_modules/.bin/microbundle --external=react,@flatom/core,use-sync-external-store",
     "clean": "cross-env fixme=fixme ../../node_modules/.bin/rimraf dist/",
     "rebuild": "yarn run clean && yarn run build",
     "bench": "yarn run rebuild && yarn run bench:now && yarn run clean",
@@ -54,5 +54,8 @@
     "@flatom/core": "^0.0.0-stub",
     "cross-env": "^7.0.3",
     "size-limit": "^4.10.1"
+  },
+  "dependencies": {
+    "use-sync-external-store": "^1.2.0"
   }
 }
